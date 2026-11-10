@@ -37,6 +37,8 @@ svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-rad
 .saved{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .saved div{flex:1;min-width:0}.saved button{margin:0;padding:6px 10px}.saved small{color:var(--mute)}
 .inl{display:flex;gap:8px}.inl button{margin:0;white-space:nowrap}
+.chk{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}.chk label{display:flex;gap:6px;align-items:center;margin:0;color:var(--ink)}input[type=checkbox]{width:auto;accent-color:var(--cu)}
+.g{grid-column:1/-1;margin:12px 0 0}.bd.el{fill:var(--cu)}.bn.e{fill:var(--on)}
 details summary{cursor:pointer;font-weight:600}
 </style>
 </head>
@@ -64,9 +66,10 @@ details summary{cursor:pointer;font-weight:600}
 <select id="size"><option>1/4</option><option>3/8</option><option selected>1/2</option><option>3/4</option></select></div>
 <div><label for="ded">Deduction per bend (mm)</label><input id="ded" type="number" step="any" inputmode="decimal" placeholder="from table"></div>
 </div>
+<div class="chk"><label><input type="checkbox" id="fs" checked> Flare at start</label><label><input type="checkbox" id="fe" checked> Flare at end</label></div>
 <label for="path">Path</label>
-<input id="path" value="x 490 x 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
-<p class="hint">Axis and length, like y200 (add − for the other direction). Two values on one axis, like x 490 x 45, mean from x=490 to x=45.</p>
+<input id="path" value="x490 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
+<p class="hint">+x runs left to right, +y away from you, +z downward. Give a letter and a length, like y200 (add − for the opposite direction). Two numbers after one letter, like x490 45, mean 490 minus 45, so a 445 mm leg in the + direction.</p>
 <button class="p" id="save">Save pipe</button>
 <p class="ok" id="msg" role="status"></p>
 </section>
@@ -76,7 +79,7 @@ details summary{cursor:pointer;font-weight:600}
 <section>
 <h2>Drawing</h2>
 <div id="views"></div>
-<p class="hint">Green dot is the tube start (origin), red dot is the end, numbered circles are the bends.</p>
+<p class="hint">Green dot is the tube start (origin), red dot is the end, numbered circles are the bends (filled = bought elbow). In every view +x runs left to right, +y points away from you and +z points down.</p>
 </section>
 
 <section>
@@ -85,9 +88,9 @@ details summary{cursor:pointer;font-weight:600}
 </section>
 
 <section>
-<details><summary>Deduction table for this user (mm per bend)</summary>
+<details><summary>Settings for this user</summary>
 <div class="row" id="tbl"></div>
-<p class="hint">New calculations use these values. Saved pipes keep the deduction they were saved with.</p>
+<p class="hint">Saved pipes keep the bend deduction they were saved with. Elbow and flare amounts are always read from here.</p>
 </details>
 </section>
 <section>
@@ -111,16 +114,18 @@ const fmt=x=>String(+x.toFixed(1));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function parse(t){
-  const toks=[...t.matchAll(/([+\-−]?)\s*([xyz])\s*(\d+(?:\.\d+)?)/gi)].map(m=>[/[-−]/.test(m[1])?-1:1,m[2].toLowerCase(),+m[3]]);
-  if(!toks.length)throw "Enter a path, for example x 490 x 45 y200 z100";
+  const re=/([+\-−]?)\s*([xyz])\s*(\d+(?:\.\d+)?)(?:[\s,;]+(\d+(?:\.\d+)?))?/gi;
+  const toks=[...t.matchAll(re)].map(m=>[/[-−]/.test(m[1])?-1:1,m[2].toLowerCase(),+m[3],m[4]===undefined?null:+m[4]]);
+  if(!toks.length)throw "Enter a path, for example x490 45 y200 z100";
+  if(/\d/.test(t.replace(re,"")))throw "Unexpected number. After an axis letter give one length (y200) or two numbers to subtract (x490 45).";
   const segs=[];
   for(let i=0;i<toks.length;){
-    let [k,ax,v]=toks[i];
-    if(i+1<toks.length&&toks[i+1][1]==ax){
-      const w=toks[i+1][2];
-      if(w==v)throw `${ax} ${v} to ${ax} ${w} is zero length`;
-      k=w>v?1:-1;v=Math.abs(w-v);i+=2;
-    }else i++;
+    let [k,ax,v,w]=toks[i];
+    if(w===null&&i+1<toks.length&&toks[i+1][1]==ax&&toks[i+1][3]===null){w=toks[i+1][2];i+=2}else i++;   // older style: x 490 x 45
+    if(w!==null){
+      if(w==v)throw `${ax} ${v} minus ${w} is 0, so the leg has no length`;
+      v=Math.abs(v-w);                        // x490 45 = 445 mm, direction comes from the sign only
+    }
     if(v==0)throw "A leg has length 0";
     segs.push([AX[ax].map(c=>c*k+0),v]);
   }
@@ -136,20 +141,31 @@ function merge(segs){
   }
   return m;
 }
-function calc(segs,d){
-  const n=segs.length-1;let cum=0,prev=null;const bends=[];
-  for(let i=0;i<n;i++){
-    cum+=segs[i][1];
-    const corner=cum-i*d,mark=corner-d/2,nr=cross(segs[i][0],segs[i+1][0]);
-    let roll=0;
-    if(prev){roll=Math.atan2(dot(cross(prev,nr),segs[i][0]),dot(prev,nr))*180/Math.PI;roll=(Math.round(roll)%360+360)%360}
-    prev=nr;bends.push({i:i+1,mark,corner,roll});
-  }
-  const warns=[];
-  segs.forEach(([,L],i)=>{if(L-(i>0?d/2:0)-(i<n?d/2:0)<0)warns.push(`Leg ${i+1} (${fmt(L)} mm) is too short for the bends at its ends.`)});
-  return {total:segs.reduce((a,s)=>a+s[1],0)-n*d,bends,warns};
+function calc(segs,d,E,fl,elb){
+  const n=segs.length-1,L=i=>segs[i][1],cuts=[],rows=[],warns=[];
+  let a=0;
+  for(let i=1;i<=n;i++)if(elb.has(i)){cuts.push([a,i-1]);a=i;rows[i]={i,elb:true}}
+  cuts.push([a,n]);
+  const pieces=cuts.map(([a,b],k)=>{
+    const s0=a==0?(fl.s?fl.mm:0):-E,e0=b==n?(fl.e?fl.mm:0):-E;   // flare adds length, a bought elbow takes it off
+    let prev=null,sum=0;
+    for(let c=a;c<=b;c++)sum+=L(c);
+    for(let c=a+1;c<=b;c++){
+      let s=0;for(let j=a;j<c;j++)s+=L(j);
+      const corner=s0+s-(c-a-1)*d,nr=cross(segs[c-1][0],segs[c][0]);
+      let roll=0;
+      if(prev){roll=Math.atan2(dot(cross(prev,nr),segs[c-1][0]),dot(prev,nr))*180/Math.PI;roll=(360-(Math.round(roll)%360+360)%360)%360}
+      prev=nr;rows[c]={i:c,piece:k+1,corner,mark:corner-d/2,roll};
+    }
+    return {a,b,cut:s0+sum-(b-a)*d+e0};
+  });
+  segs.forEach((s,i)=>{
+    const sa=i>0?(elb.has(i)?E:d/2):0,ea=i<n?(elb.has(i+1)?E:d/2):0;
+    if(L(i)-sa-ea<0)warns.push(`Leg ${i+1} (${fmt(L(i))} mm) is too short for the bends or elbows at its ends.`);
+  });
+  return {pieces,rows:rows.slice(1),total:pieces.reduce((t,p)=>t+p.cut,0),warns};
 }
-function panel(k,t,f,axes,pts,segs){
+function panel(k,t,f,axes,pts,segs,elbs){
   const pp=pts.map(f),us=pp.map(q=>q[0]),vs=pp.map(q=>q[1]);
   const ext=Math.max(Math.max(...us)-Math.min(...us),Math.max(...vs)-Math.min(...vs),1),al=ext*.3;
   const ends=Object.entries(axes).map(([a,[x,y]])=>[a,x*al,y*al]);
@@ -166,18 +182,17 @@ function panel(k,t,f,axes,pts,segs){
     if(Math.hypot(x2-x1,y2-y1)>=28){const x=(x1+x2)/2,y=(y1+y2)/2-7,L=fmt(segs[i][1]);o+=`<text class="ho" x="${x}" y="${y}">${L}</text><text class="ln" x="${x}" y="${y}">${L}</text>`}
   });
   o+=`<circle cx="${X(pp[0][0])}" cy="${Y(pp[0][1])}" r="5" fill="var(--ok)"/><circle cx="${X(pp.at(-1)[0])}" cy="${Y(pp.at(-1)[1])}" r="5" fill="var(--bad)"/>`;
-  pp.slice(1,-1).forEach((q,i)=>o+=`<circle class="bd" cx="${X(q[0])}" cy="${Y(q[1])}" r="8"/><text class="bn" x="${X(q[0])}" y="${Y(q[1])+4}">${i+1}</text>`);
+  pp.slice(1,-1).forEach((q,i)=>{const e=elbs.has(i+1)?" el":"";o+=`<circle class="bd${e}" cx="${X(q[0])}" cy="${Y(q[1])}" r="8"/><text class="bn${e&&" e"}" x="${X(q[0])}" y="${Y(q[1])+4}">${i+1}</text>`});
   return o+"</svg></div>";
 }
-function draw(segs){
+function draw(segs,elbs=new Set()){
   const pts=[[0,0,0]];
   for(const [d,L] of segs){const p=pts.at(-1);pts.push([p[0]+d[0]*L,p[1]+d[1]*L,p[2]+d[2]*L])}
-  const c=Math.cos(Math.PI/6);
-  const V=[["Isometric",p=>[(p[1]-p[0])*c,p[2]-(p[0]+p[1])/2],{x:[-c,-.5],y:[c,-.5],z:[0,1]}],
+  const V=[["3D view (x right, y away, z down)",p=>[p[0]+p[1]/2,-p[2]+p[1]/2],{x:[1,0],y:[.5,.5],z:[0,-1]}],
     ["Top (X-Y)",p=>[p[0],p[1]],{x:[1,0],y:[0,1]}],
-    ["Front (X-Z)",p=>[p[0],p[2]],{x:[1,0],z:[0,1]}],
-    ["Side (Y-Z)",p=>[p[1],p[2]],{y:[1,0],z:[0,1]}]];
-  return V.map((v,k)=>panel(k,v[0],v[1],v[2],pts,segs)).join("");
+    ["Front (X-Z)",p=>[p[0],-p[2]],{x:[1,0],z:[0,-1]}],
+    ["Side (Y-Z)",p=>[p[1],-p[2]],{y:[1,0],z:[0,-1]}]];
+  return V.map((v,k)=>panel(k,v[0],v[1],v[2],pts,segs,elbs)).join("");
 }
 //UI
 const $=s=>document.querySelector(s);
@@ -188,7 +203,12 @@ try{const o=JSON.parse(localStorage.getItem("bendmarks.v1")||"null");
   if(o&&!Object.keys(db.users).length){db.users.Default={pipes:o.pipes||{},ded:o.ded||{}};db.current="Default"}}catch(e){}
 if(!db.users[db.current])db.current=Object.keys(db.users)[0]||"";
 const U=()=>db.users[db.current];
+const DEFE={"1/4":26,"3/8":27,"1/2":28,"3/4":35};
 const D=()=>({...DEF,...(U()?.ded||{})});
+const E=()=>({...DEFE,...(U()?.elb||{})});
+const F=()=>U()?.flare??3;
+let elbs=new Set();
+const fl0=p=>({s:p.fs!==false,e:p.fe!==false,mm:F()});
 const msg=(t,id="msg")=>{$("#"+id).textContent=t};
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg("This browser blocked saving.")}};
 const legsText=segs=>segs.map(([d,L])=>lab(d)+" "+fmt(L)).join(", ");
@@ -199,13 +219,18 @@ function render(){
   try{
     const size=$("#size").value,raw=$("#ded").value,d=raw!==""?+raw:D()[size];
     if(!(d>=0))throw "Deduction must be a number, 0 or more";
-    const segs=parse($("#path").value),r=calc(segs,d);
-    cur={size,d,segs};
-    out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut</small></p>
-<p class="legs">Legs: ${legsText(segs)}. ${r.bends.length} bends at ${fmt(d)} mm each.</p>
-<table><tr><th>Bend</th><th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.bends.map(b=>`<tr><td>${b.i}</td><td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td></tr>`).join("")}</table>
-<p class="hint">Mark is where to bend, measured from the tube start (centre of the bend). Corner is the virtual corner on the shortened tube. Roll is how far to turn the tube about its own axis before the bend, relative to the previous bend.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
-    $("#views").innerHTML=draw(segs);
+    const segs=parse($("#path").value),n=segs.length-1;
+    for(const b of [...elbs])if(b>n)elbs.delete(b);
+    const fs=$("#fs").checked,fe=$("#fe").checked,fl={s:fs,e:fe,mm:F()},em=E()[size];
+    const r=calc(segs,d,em,fl,elbs),mp=r.pieces.length>1;
+    cur={size,d,segs,elb:[...elbs],fs,fe};
+    const ft=[fs?"start":"",fe?"end":""].filter(Boolean).join(" and ");
+    out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut${mp?" in total":""}</small></p>
+<p class="legs">Legs: ${legsText(segs)}. ${r.rows.filter(b=>!b.elb).length==1?"1 bend":r.rows.filter(b=>!b.elb).length+" bends"} at ${fmt(d)} mm each${elbs.size?`, ${elbs.size} bought elbow${elbs.size>1?"s":""} (${fmt(em)} mm off each piece end)`:""}.${ft&&fl.mm?` Includes ${fmt(fl.mm)} mm flare at the ${ft}.`:""}</p>
+${mp?`<p class="legs">${r.pieces.map((p,k)=>`Piece ${k+1} (leg${p.b>p.a?"s "+(p.a+1)+"–"+(p.b+1):" "+(p.a+1)}): ${fmt(p.cut)} mm`).join(", ")}.</p>`:""}
+<table><tr><th>Bend</th><th>Elbow</th>${mp?"<th>Piece</th>":""}<th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.rows.map(b=>`<tr><td>${b.i}</td><td><input type="checkbox" data-b="${b.i}"${b.elb?" checked":""} aria-label="Bought elbow at bend ${b.i}"></td>${mp?`<td>${b.elb?"—":b.piece}</td>`:""}${b.elb?"<td>—</td><td>—</td><td>—</td>":`<td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td>`}</tr>`).join("")}</table>
+<p class="hint">Tick Elbow where you use a bought elbow instead of bending: the pipe is cut there into separate pieces. Mark is where to bend, measured from the start of its piece (centre of the bend, flare included). Corner is the virtual corner on the shortened piece. Roll is how far to turn the piece clockwise about its own axis (looking from its start toward its end) before the bend, relative to the previous bend in that piece.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
+    $("#views").innerHTML=draw(segs,elbs);
   }catch(e){cur=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
 }
 function users(){
@@ -218,10 +243,12 @@ function list(){
   $("#lh").textContent=u?`Saved pipes for ${db.current}`:"Saved pipes";
   $("#list").innerHTML=!u?`<p class="hint">Create or choose a user to save pipes.</p>`:names.length?names.map(n=>{
     const p=u.pipes[n],segs=p.legs;
-    return `<div class="saved"><div><strong>${esc(n)}</strong><br><small>${p.size}", ${segs.length-1} bends, cut ${fmt(calc(segs,p.deduct).total)} mm</small></div><button data-a="load" data-n="${esc(n)}">Load</button><button data-a="del" data-n="${esc(n)}">Delete</button></div>`}).join(""):`<p class="hint">Nothing saved yet. Name a pipe above and press Save pipe.</p>`;
+    return `<div class="saved"><div><strong>${esc(n)}</strong><br><small>${p.size}", ${segs.length-1} bends, cut ${fmt(calc(segs,p.deduct,E()[p.size],fl0(p),new Set(p.elb||[])).total)} mm</small></div><button data-a="load" data-n="${esc(n)}">Load</button><button data-a="del" data-n="${esc(n)}">Delete</button></div>`}).join(""):`<p class="hint">Nothing saved yet. Name a pipe above and press Save pipe.</p>`;
 }
 function tbl(){
-  $("#tbl").innerHTML=Object.entries(D()).map(([k,v])=>`<div><label>${k}"</label><input type="number" step="any" inputmode="decimal" data-s="${k}" value="${v}"${U()?"":" disabled"}></div>`).join("");
+  const dis=U()?"":" disabled";
+  const grp=(t,k,o)=>`<h3 class="g">${t}</h3>`+Object.entries(o).map(([s,v])=>`<div><label>${s}"</label><input type="number" step="any" inputmode="decimal" data-k="${k}" data-s="${s}" value="${v}"${dis}></div>`).join("");
+  $("#tbl").innerHTML=grp("Bend deduction (mm per bend)","ded",D())+grp("Bought elbow (mm off each piece end)","elb",E())+`<h3 class="g">Flare</h3><div><label>mm added per flared end</label><input type="number" step="any" inputmode="decimal" data-k="flare" value="${F()}"${dis}></div>`;
 }
 function refresh(){users();tbl();list();render()}
 
@@ -240,22 +267,26 @@ $("#deluser").onclick=()=>{
   if(!U()||!confirm(`Delete user "${db.current}" and all their saved pipes?`))return;
   delete db.users[db.current];db.current=Object.keys(db.users)[0]||"";store();refresh();msg("User deleted.","umsg");
 };
-$("#tbl").oninput=e=>{const s=e.target.dataset.s;if(s&&U()&&e.target.value!==""){U().ded[s]=+e.target.value;store();render()}};
-["#path","#size","#ded"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
+$("#tbl").oninput=e=>{
+  const k=e.target.dataset.k,s=e.target.dataset.s;
+  if(k&&U()&&e.target.value!==""){if(k=="flare")U().flare=+e.target.value;else(U()[k]??={})[s]=+e.target.value;store();render();list()}
+};
+$("#out").onchange=e=>{const b=+e.target.dataset.b;if(b){e.target.checked?elbs.add(b):elbs.delete(b);render()}};
+["#path","#size","#ded","#fs","#fe"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
 $("#save").onclick=()=>{
   const n=$("#name").value.trim();
   if(!U())return msg("Create or choose a user first.");
   if(!okName(n))return msg("Give the pipe a name first.");
   if(!cur)return msg("Fix the path first.");
   const had=Object.hasOwn(U().pipes,n);
-  U().pipes[n]={size:cur.size,deduct:cur.d,legs:cur.segs};store();list();
+  U().pipes[n]={size:cur.size,deduct:cur.d,legs:cur.segs,elb:cur.elb,fs:cur.fs,fe:cur.fe};store();list();
   msg(had?`Updated "${n}".`:`Saved "${n}".`);
 };
 $("#list").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   const n=b.dataset.n,p=U().pipes[n];
   if(b.dataset.a=="del"){if(confirm(`Delete "${n}"?`)){delete U().pipes[n];store();list()}}
-  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;$("#path").value=legsText(p.legs).replace(/,/g,"");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
+  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=legsText(p.legs).replace(/,/g,"");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
 };
 const exportJson=(users,file)=>{
   const a=document.createElement("a");

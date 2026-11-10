@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bendmarks</title>
+<style>
+:root{--bg:#eef1f0;--ink:#17262b;--mute:#5a6b6f;--card:#fff;--line:#cdd7d5;--cu:#b4531f;--on:#fff;--ok:#2a8a4a;--bad:#c23b2e}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a1d;--ink:#e6eeee;--mute:#8fa3a6;--card:#16262a;--line:#2a3e42;--cu:#e08a4f;--on:#1a0e06;--ok:#5cc17c;--bad:#ff8a7a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px 40px}
+main{max-width:760px;margin:0 auto}
+h1{font-size:1.7rem;margin:8px 0 2px;letter-spacing:-.01em}
+h2{font-size:1.05rem;margin:0 0 10px}
+h3{font-size:.85rem;font-weight:600;color:var(--mute);margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 18px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 16px}
+label{display:block;font-size:.9rem;color:var(--mute);margin:10px 0 3px}
+input,select{width:100%;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--cu);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;font-weight:600;padding:9px 14px;border-radius:6px;border:1px solid var(--cu);background:transparent;color:var(--cu);cursor:pointer;margin:12px 8px 0 0}
+button.p{background:var(--cu);color:var(--on)}
+.big{font-size:2.2rem;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+.big small{font-size:1rem;font-weight:400;color:var(--mute)}
+.legs,.hint{color:var(--mute);font-size:.9rem;margin:4px 0 10px}
+.err{color:var(--bad);margin:10px 0 0}.warn{color:var(--bad);font-size:.9rem;margin:6px 0 0}.ok{color:var(--ok);margin:10px 0 0;min-height:1.5em}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+th{font-size:.85rem;color:var(--mute);font-weight:600}
+#views{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-top:8px}
+svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}
+.ax{stroke:var(--mute);stroke-width:1.5}.at{fill:var(--mute);font-size:12px;text-anchor:middle}
+.pipe{fill:none;stroke:var(--cu);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.bd{fill:var(--card);stroke:var(--cu);stroke-width:2}.bn{fill:var(--ink);font-size:11px;text-anchor:middle}
+.ln{fill:var(--ink);font-size:11px;text-anchor:middle}.ho{stroke:var(--card);stroke-width:4;fill:var(--card);font-size:11px;text-anchor:middle}
+.saved{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.saved div{flex:1;min-width:0}.saved button{margin:0;padding:6px 10px}.saved small{color:var(--mute)}
+.inl{display:flex;gap:8px}.inl button{margin:0;white-space:nowrap}
+details summary{cursor:pointer;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>Bendmarks</h1>
+<p class="sub">Bend marks and cut length for tube with 90° bends. All lengths in mm.</p>
+
+<section>
+<h2>User</h2>
+<label for="user">Current user</label>
+<select id="user"></select>
+<label for="newuser">New user</label>
+<div class="inl"><input id="newuser" placeholder="Name" autocomplete="off"><button class="p" id="create">Create user</button></div>
+<button id="deluser">Delete this user</button>
+<p class="ok" id="umsg" role="status"></p>
+</section>
+
+<section>
+<h2>Pipe</h2>
+<label for="name">Name</label>
+<input id="name" placeholder="rail1" autocomplete="off">
+<div class="row">
+<div><label for="size">Tube size</label>
+<select id="size"><option>1/4</option><option>3/8</option><option selected>1/2</option><option>3/4</option></select></div>
+<div><label for="ded">Deduction per bend (mm)</label><input id="ded" type="number" step="any" inputmode="decimal" placeholder="from table"></div>
+</div>
+<label for="path">Path</label>
+<input id="path" value="x 490 x 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
+<p class="hint">Axis and length, like y200 (add − for the other direction). Two values on one axis, like x 490 x 45, mean from x=490 to x=45.</p>
+<button class="p" id="save">Save pipe</button>
+<p class="ok" id="msg" role="status"></p>
+</section>
+
+<section id="out" aria-live="polite"></section>
+
+<section>
+<h2>Drawing</h2>
+<div id="views"></div>
+<p class="hint">Green dot is the tube start (origin), red dot is the end, numbered circles are the bends.</p>
+</section>
+
+<section>
+<h2 id="lh">Saved pipes</h2>
+<div id="list"></div>
+</section>
+
+<section>
+<details><summary>Deduction table for this user (mm per bend)</summary>
+<div class="row" id="tbl"></div>
+<p class="hint">New calculations use these values. Saved pipes keep the deduction they were saved with.</p>
+</details>
+</section>
+<section>
+<h2>Data file</h2>
+<p class="hint">All users, their pipes and deduction tables are stored in this browser. Export this user saves one person's pipes and deduction table as their own JSON file (bendmarks-name.json). Export all users saves everyone in one file. Import loads either kind, for example on another phone or computer.</p>
+<button id="expu" class="p">Export this user</button>
+<button id="exp">Export all users</button>
+<button id="imp">Import JSON file</button>
+<input id="file" type="file" accept=".json,application/json" hidden>
+<p class="ok" id="fmsg" role="status"></p>
+</section>
+</main>
+
+<script>
+const DEF={"1/4":8,"3/8":12,"1/2":16,"3/4":20};
+const AX={x:[1,0,0],y:[0,1,0],z:[0,0,1]};
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const lab=d=>(d[0]+d[1]+d[2]>0?"+":"-")+"xyz"[d.findIndex(c=>c)];
+const fmt=x=>String(+x.toFixed(1));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function parse(t){
+  const toks=[...t.matchAll(/([+\-−]?)\s*([xyz])\s*(\d+(?:\.\d+)?)/gi)].map(m=>[/[-−]/.test(m[1])?-1:1,m[2].toLowerCase(),+m[3]]);
+  if(!toks.length)throw "Enter a path, for example x 490 x 45 y200 z100";
+  const segs=[];
+  for(let i=0;i<toks.length;){
+    let [k,ax,v]=toks[i];
+    if(i+1<toks.length&&toks[i+1][1]==ax){
+      const w=toks[i+1][2];
+      if(w==v)throw `${ax} ${v} to ${ax} ${w} is zero length`;
+      k=w>v?1:-1;v=Math.abs(w-v);i+=2;
+    }else i++;
+    if(v==0)throw "A leg has length 0";
+    segs.push([AX[ax].map(c=>c*k+0),v]);
+  }
+  return merge(segs);
+}
+function merge(segs){
+  const m=[[segs[0][0],segs[0][1]]];
+  for(const [d,L] of segs.slice(1)){
+    const s=dot(d,m[m.length-1][0]);
+    if(s==1)m[m.length-1][1]+=L;
+    else if(s==-1)throw "A leg doubles back 180° onto the previous one. Bends must be 90°.";
+    else m.push([d,L]);
+  }
+  return m;
+}
+function calc(segs,d){
+  const n=segs.length-1;let cum=0,prev=null;const bends=[];
+  for(let i=0;i<n;i++){
+    cum+=segs[i][1];
+    const corner=cum-i*d,mark=corner-d/2,nr=cross(segs[i][0],segs[i+1][0]);
+    let roll=0;
+    if(prev){roll=Math.atan2(dot(cross(prev,nr),segs[i][0]),dot(prev,nr))*180/Math.PI;roll=(Math.round(roll)%360+360)%360}
+    prev=nr;bends.push({i:i+1,mark,corner,roll});
+  }
+  const warns=[];
+  segs.forEach(([,L],i)=>{if(L-(i>0?d/2:0)-(i<n?d/2:0)<0)warns.push(`Leg ${i+1} (${fmt(L)} mm) is too short for the bends at its ends.`)});
+  return {total:segs.reduce((a,s)=>a+s[1],0)-n*d,bends,warns};
+}
+function panel(k,t,f,axes,pts,segs){
+  const pp=pts.map(f),us=pp.map(q=>q[0]),vs=pp.map(q=>q[1]);
+  const ext=Math.max(Math.max(...us)-Math.min(...us),Math.max(...vs)-Math.min(...vs),1),al=ext*.3;
+  const ends=Object.entries(axes).map(([a,[x,y]])=>[a,x*al,y*al]);
+  const au=[...us,0,...ends.map(e=>e[1])],av=[...vs,0,...ends.map(e=>e[2])];
+  const mu=Math.min(...au),mv=Math.min(...av),bw=Math.max(...au)-mu,bh=Math.max(...av)-mv;
+  const W=340,H=320,pad=34,aw=W-2*pad,ah=H-2*pad-14,s=Math.min(aw/(bw||1e-9),ah/(bh||1e-9));
+  const left=pad+(aw-bw*s)/2,bot=pad+14+(ah+bh*s)/2;
+  const X=u=>+(left+(u-mu)*s).toFixed(1),Y=v=>+(bot-(v-mv)*s).toFixed(1);
+  let o=`<div><h3>${t}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t} view"><defs><marker id="mk${k}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="var(--mute)"/></marker></defs>`;
+  for(const [a,eu,ev] of ends)o+=`<line class="ax" x1="${X(0)}" y1="${Y(0)}" x2="${X(eu)}" y2="${Y(ev)}" marker-end="url(#mk${k})"/><text class="at" x="${X(eu*1.14)}" y="${Y(ev*1.14)+4}">${a}</text>`;
+  o+=`<polyline class="pipe" points="${pp.map(q=>X(q[0])+","+Y(q[1])).join(" ")}"/>`;
+  pp.slice(1).forEach((q,i)=>{
+    const p=pp[i],x1=X(p[0]),y1=Y(p[1]),x2=X(q[0]),y2=Y(q[1]);
+    if(Math.hypot(x2-x1,y2-y1)>=28){const x=(x1+x2)/2,y=(y1+y2)/2-7,L=fmt(segs[i][1]);o+=`<text class="ho" x="${x}" y="${y}">${L}</text><text class="ln" x="${x}" y="${y}">${L}</text>`}
+  });
+  o+=`<circle cx="${X(pp[0][0])}" cy="${Y(pp[0][1])}" r="5" fill="var(--ok)"/><circle cx="${X(pp.at(-1)[0])}" cy="${Y(pp.at(-1)[1])}" r="5" fill="var(--bad)"/>`;
+  pp.slice(1,-1).forEach((q,i)=>o+=`<circle class="bd" cx="${X(q[0])}" cy="${Y(q[1])}" r="8"/><text class="bn" x="${X(q[0])}" y="${Y(q[1])+4}">${i+1}</text>`);
+  return o+"</svg></div>";
+}
+function draw(segs){
+  const pts=[[0,0,0]];
+  for(const [d,L] of segs){const p=pts.at(-1);pts.push([p[0]+d[0]*L,p[1]+d[1]*L,p[2]+d[2]*L])}
+  const c=Math.cos(Math.PI/6);
+  const V=[["Isometric",p=>[(p[1]-p[0])*c,p[2]-(p[0]+p[1])/2],{x:[-c,-.5],y:[c,-.5],z:[0,1]}],
+    ["Top (X-Y)",p=>[p[0],p[1]],{x:[1,0],y:[0,1]}],
+    ["Front (X-Z)",p=>[p[0],p[2]],{x:[1,0],z:[0,1]}],
+    ["Side (Y-Z)",p=>[p[1],p[2]],{y:[1,0],z:[0,1]}]];
+  return V.map((v,k)=>panel(k,v[0],v[1],v[2],pts,segs)).join("");
+}
+//UI
+const $=s=>document.querySelector(s);
+const KEY="bendmarks.v2";
+let db={users:{},current:""},cur=null;
+try{db={...db,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){}
+try{const o=JSON.parse(localStorage.getItem("bendmarks.v1")||"null");
+  if(o&&!Object.keys(db.users).length){db.users.Default={pipes:o.pipes||{},ded:o.ded||{}};db.current="Default"}}catch(e){}
+if(!db.users[db.current])db.current=Object.keys(db.users)[0]||"";
+const U=()=>db.users[db.current];
+const D=()=>({...DEF,...(U()?.ded||{})});
+const msg=(t,id="msg")=>{$("#"+id).textContent=t};
+const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg("This browser blocked saving.")}};
+const legsText=segs=>segs.map(([d,L])=>lab(d)+" "+fmt(L)).join(", ");
+const okName=n=>n&&n!="__proto__";
+
+function render(){
+  const out=$("#out");
+  try{
+    const size=$("#size").value,raw=$("#ded").value,d=raw!==""?+raw:D()[size];
+    if(!(d>=0))throw "Deduction must be a number, 0 or more";
+    const segs=parse($("#path").value),r=calc(segs,d);
+    cur={size,d,segs};
+    out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut</small></p>
+<p class="legs">Legs: ${legsText(segs)}. ${r.bends.length} bends at ${fmt(d)} mm each.</p>
+<table><tr><th>Bend</th><th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.bends.map(b=>`<tr><td>${b.i}</td><td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td></tr>`).join("")}</table>
+<p class="hint">Mark is where to bend, measured from the tube start (centre of the bend). Corner is the virtual corner on the shortened tube. Roll is how far to turn the tube about its own axis before the bend, relative to the previous bend.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
+    $("#views").innerHTML=draw(segs);
+  }catch(e){cur=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
+}
+function users(){
+  const names=Object.keys(db.users).sort((a,b)=>a.localeCompare(b));
+  $("#user").innerHTML=names.length?names.map(n=>`<option${n==db.current?" selected":""}>${esc(n)}</option>`).join(""):`<option value="">No users yet</option>`;
+  $("#deluser").hidden=!U();$("#expu").hidden=!U();
+}
+function list(){
+  const u=U(),names=u?Object.keys(u.pipes):[];
+  $("#lh").textContent=u?`Saved pipes for ${db.current}`:"Saved pipes";
+  $("#list").innerHTML=!u?`<p class="hint">Create or choose a user to save pipes.</p>`:names.length?names.map(n=>{
+    const p=u.pipes[n],segs=p.legs;
+    return `<div class="saved"><div><strong>${esc(n)}</strong><br><small>${p.size}", ${segs.length-1} bends, cut ${fmt(calc(segs,p.deduct).total)} mm</small></div><button data-a="load" data-n="${esc(n)}">Load</button><button data-a="del" data-n="${esc(n)}">Delete</button></div>`}).join(""):`<p class="hint">Nothing saved yet. Name a pipe above and press Save pipe.</p>`;
+}
+function tbl(){
+  $("#tbl").innerHTML=Object.entries(D()).map(([k,v])=>`<div><label>${k}"</label><input type="number" step="any" inputmode="decimal" data-s="${k}" value="${v}"${U()?"":" disabled"}></div>`).join("");
+}
+function refresh(){users();tbl();list();render()}
+
+$("#user").onchange=()=>{db.current=$("#user").value;store();msg("");msg("","umsg");refresh()};
+const create=()=>{
+  const n=$("#newuser").value.trim();
+  if(!okName(n))return msg("Enter a name for the new user.","umsg");
+  const had=Object.hasOwn(db.users,n);
+  if(!had)db.users[n]={pipes:{},ded:{}};
+  db.current=n;$("#newuser").value="";store();msg("");refresh();
+  msg(had?`"${n}" already exists. Switched to them.`:`Created user "${n}".`,"umsg");
+};
+$("#create").onclick=create;
+$("#newuser").onkeydown=e=>{if(e.key=="Enter")create()};
+$("#deluser").onclick=()=>{
+  if(!U()||!confirm(`Delete user "${db.current}" and all their saved pipes?`))return;
+  delete db.users[db.current];db.current=Object.keys(db.users)[0]||"";store();refresh();msg("User deleted.","umsg");
+};
+$("#tbl").oninput=e=>{const s=e.target.dataset.s;if(s&&U()&&e.target.value!==""){U().ded[s]=+e.target.value;store();render()}};
+["#path","#size","#ded"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
+$("#save").onclick=()=>{
+  const n=$("#name").value.trim();
+  if(!U())return msg("Create or choose a user first.");
+  if(!okName(n))return msg("Give the pipe a name first.");
+  if(!cur)return msg("Fix the path first.");
+  const had=Object.hasOwn(U().pipes,n);
+  U().pipes[n]={size:cur.size,deduct:cur.d,legs:cur.segs};store();list();
+  msg(had?`Updated "${n}".`:`Saved "${n}".`);
+};
+$("#list").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const n=b.dataset.n,p=U().pipes[n];
+  if(b.dataset.a=="del"){if(confirm(`Delete "${n}"?`)){delete U().pipes[n];store();list()}}
+  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;$("#path").value=legsText(p.legs).replace(/,/g,"");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
+};
+const exportJson=(users,file)=>{
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({app:"bendmarks",version:2,users},null,2)],{type:"application/json"}));
+  a.download=file;a.click();
+};
+$("#exp").onclick=()=>exportJson(db.users,"bendmarks-all-users.json");
+$("#expu").onclick=()=>{
+  if(!U())return msg("Create or choose a user first.","fmsg");
+  exportJson({[db.current]:U()},`bendmarks-${db.current.replace(/[^\w.-]+/g,"_")}.json`);
+  msg(`Exported ${db.current}.`,"fmsg");
+};
+$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=async e=>{
+  try{
+    const p=JSON.parse(await e.target.files[0].text());
+    const us=p.users||(U()?{[db.current]:{pipes:p}}:null);   // older exports were just a pipes map
+    if(!us)throw 0;
+    for(const n in us){
+      const u=us[n];
+      if(!okName(n)||typeof u.pipes!="object")throw 0;
+      for(const k in u.pipes){const q=u.pipes[k];if(!(Array.isArray(q.legs)&&q.size&&q.deduct>=0))throw 0}
+    }
+    for(const n in us){
+      const t=db.users[n]??={pipes:{},ded:{}};
+      Object.assign(t.pipes,us[n].pipes);Object.assign(t.ded,us[n].ded||{});
+    }
+    if(!U())db.current=Object.keys(db.users)[0]||"";
+    store();refresh();msg(`Imported ${Object.keys(us).length} user(s).`,"fmsg");
+  }catch(x){msg("That file is not a Bendmarks backup.","fmsg")}
+  e.target.value="";
+};
+refresh();
+</script>
+</body>
+</html>

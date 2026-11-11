@@ -39,6 +39,13 @@ svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-rad
 .inl{display:flex;gap:8px}.inl button{margin:0;white-space:nowrap}
 .chk{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}.chk label{display:flex;gap:6px;align-items:center;margin:0;color:var(--ink)}input[type=checkbox]{width:auto;accent-color:var(--cu)}
 .g{grid-column:1/-1;margin:12px 0 0}.bd.el{fill:var(--cu)}.bn.e{fill:var(--on)}
+[hidden]{display:none!important}
+#tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tag{display:inline-flex;border:1px solid var(--cu);border-radius:999px;overflow:hidden}
+.tag button,.tg{margin:0;border:0;border-radius:0;padding:8px 13px;font-weight:500;background:transparent;color:var(--cu)}
+.tag .x{border-left:1px solid var(--cu);padding:8px 11px}
+.tg{border:1px dashed var(--cu);border-radius:999px}
+#tadd{margin-top:8px}
 details summary{cursor:pointer;font-weight:600}
 </style>
 </head>
@@ -61,15 +68,32 @@ details summary{cursor:pointer;font-weight:600}
 <h2>Pipe</h2>
 <label for="name">Name</label>
 <input id="name" placeholder="rail1" autocomplete="off">
+<div id="tags"></div>
+<div class="inl" id="tadd" hidden><input id="newtag" placeholder="New tag" maxlength="24" autocomplete="off"><button class="p" id="tagadd" type="button">Add tag</button></div>
 <div class="row">
 <div><label for="size">Tube size</label>
 <select id="size"><option>1/4</option><option>3/8</option><option selected>1/2</option><option>3/4</option></select></div>
 <div><label for="ded">Deduction per bend (mm)</label><input id="ded" type="number" step="any" inputmode="decimal" placeholder="from table"></div>
 </div>
+<label for="meas">Bending marks measured from</label>
+<select id="meas"><option value="short" selected>Shorter end</option><option value="start">Start of the piece</option></select>
 <div class="chk"><label><input type="checkbox" id="fs" checked> Flare at start</label><label><input type="checkbox" id="fe" checked> Flare at end</label></div>
 <label for="path">Path</label>
 <input id="path" value="x490 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
-<p class="hint">+x runs left to right, +y away from you, +z downward. Give a letter and a length, like y200 (add − for the opposite direction). Two numbers after one letter, like x490 45, mean 490 minus 45, so a 445 mm leg in the + direction.</p>
+<p class="hint">+x runs left to right, +y away from you, +z downward. Give a letter and a length, like y200 (add − for the opposite direction). Two numbers after one letter, like x490 45, mean 490 minus 45, so a 445 mm leg in the + direction. A diagonal leg uses two axes with a slash, like y51/z75. The diagonal step helper below builds one for you.</p>
+<details id="dstep"><summary>Diagonal step (two bends)</summary>
+<div class="row">
+<div><label for="da">Runs along</label><select id="da"><option>x</option><option>y</option><option selected>z</option></select></div>
+<div><label for="do">Steps sideways in</label><select id="do"><option>x</option><option selected>y</option><option>z</option></select></div>
+<div><label for="dd">Distance along, with straights</label><input id="dd" type="number" step="any" inputmode="decimal" placeholder="155"></div>
+<div><label for="df">Sideways offset</label><input id="df" type="number" step="any" inputmode="decimal" placeholder="51"></div>
+<div><label for="d1">Straight at start</label><input id="d1" type="number" step="any" inputmode="decimal" placeholder="40"></div>
+<div><label for="d2">Straight at end</label><input id="d2" type="number" step="any" inputmode="decimal" placeholder="40"></div>
+</div>
+<div class="chk"><label><input type="checkbox" id="d45"> Use exactly 45° bends (end straight takes the rest)</label></div>
+<p class="hint" id="dinfo"></p>
+<button type="button" id="dins" class="p">Add to path</button>
+</details>
 <button class="p" id="save">Save pipe</button>
 <p class="ok" id="msg" role="status"></p>
 </section>
@@ -109,22 +133,32 @@ const DEF={"1/4":8,"3/8":12,"1/2":16,"3/4":20};
 const AX={x:[1,0,0],y:[0,1,0],z:[0,0,1]};
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-const lab=d=>(d[0]+d[1]+d[2]>0?"+":"-")+"xyz"[d.findIndex(c=>c)];
+const comp=(d,L)=>d.map((c,i)=>[c*L,"xyz"[i]]).filter(([v])=>Math.abs(v)>1e-6);
+const num=x=>String(+x.toFixed(3));
+const legTok=([d,L])=>comp(d,L).map(([v,a])=>(v<0?"-":"+")+a+num(Math.abs(v))).join("/");   // +x445 or +y51/+z75
 const fmt=x=>String(+x.toFixed(1));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function parse(t){
-  const re=/([+\-−]?)\s*([xyz])\s*(\d+(?:\.\d+)?)(?:[\s,;]+(\d+(?:\.\d+)?))?/gi;
-  const toks=[...t.matchAll(re)].map(m=>[/[-−]/.test(m[1])?-1:1,m[2].toLowerCase(),+m[3],m[4]===undefined?null:+m[4]]);
+  const N="(\\d+(?:\\.\\d+)?)",S="([+\\-−]?)";
+  const re=new RegExp(S+"\\s*([xyz])\\s*"+N+"(?:\\s*\\/\\s*"+S+"\\s*([xyz])\\s*"+N+"|[\\s,;]+"+N+")?","gi");
+  const toks=[...t.matchAll(re)].map(m=>({k:/[-−]/.test(m[1])?-1:1,ax:m[2].toLowerCase(),v:+m[3],k2:/[-−]/.test(m[4]||"")?-1:1,ax2:m[5]&&m[5].toLowerCase(),v2:m[6]===undefined?null:+m[6],w:m[7]===undefined?null:+m[7]}));
   if(!toks.length)throw "Enter a path, for example x490 45 y200 z100";
-  if(/\d/.test(t.replace(re,"")))throw "Unexpected number. After an axis letter give one length (y200) or two numbers to subtract (x490 45).";
+  if(/\d/.test(t.replace(re,"")))throw "Unexpected number. After an axis letter give one length (y200), two numbers to subtract (x490 45) or a diagonal (y51/z75).";
   const segs=[];
   for(let i=0;i<toks.length;){
-    let [k,ax,v,w]=toks[i];
-    if(w===null&&i+1<toks.length&&toks[i+1][1]==ax&&toks[i+1][3]===null){w=toks[i+1][2];i+=2}else i++;   // older style: x 490 x 45
+    let {k,ax,v,w,ax2,k2,v2}=toks[i];
+    if(ax2){                                      // diagonal: two axes at once
+      if(ax2==ax)throw "A diagonal needs two different axes, like y51/z75";
+      const len=Math.hypot(v,v2),vec=[0,0,0];
+      if(!len)throw "A leg has length 0";
+      vec["xyz".indexOf(ax)]=k*v;vec["xyz".indexOf(ax2)]=k2*v2;
+      segs.push([vec.map(c=>c/len+0),len]);i++;continue;
+    }
+    if(w===null&&i+1<toks.length&&toks[i+1].ax==ax&&toks[i+1].w===null&&!toks[i+1].ax2){w=toks[i+1].v;i+=2}else i++;   // older style: x 490 x 45
     if(w!==null){
       if(w==v)throw `${ax} ${v} minus ${w} is 0, so the leg has no length`;
-      v=Math.abs(v-w);                        // x490 45 = 445 mm, direction comes from the sign only
+      v=Math.abs(v-w);                            // x490 45 = 445 mm, direction comes from the sign only
     }
     if(v==0)throw "A leg has length 0";
     segs.push([AX[ax].map(c=>c*k+0),v]);
@@ -135,34 +169,45 @@ function merge(segs){
   const m=[[segs[0][0],segs[0][1]]];
   for(const [d,L] of segs.slice(1)){
     const s=dot(d,m[m.length-1][0]);
-    if(s==1)m[m.length-1][1]+=L;
-    else if(s==-1)throw "A leg doubles back 180° onto the previous one. Bends must be 90°.";
+    if(s>1-1e-9)m[m.length-1][1]+=L;
+    else if(s<-1+1e-9)throw "A leg doubles back 180° onto the previous one.";
     else m.push([d,L]);
   }
   return m;
 }
-function calc(segs,d,E,fl,elb){
+const nrm=(a,b)=>{const c=cross(a,b),m=Math.hypot(c[0],c[1],c[2]);return c.map(x=>x/m)};
+function calc(segs,d,E,fl,elb,mode="short"){
   const n=segs.length-1,L=i=>segs[i][1],cuts=[],rows=[],warns=[];
+  const ang=c=>Math.acos(Math.max(-1,Math.min(1,dot(segs[c-1][0],segs[c][0]))));   // angle of bend c, radians
+  const k90=2-Math.PI/2,R=d/k90;                                                    // bend radius implied by the 90° deduction
+  const ded=c=>d*(2*Math.tan(ang(c)/2)-ang(c))/k90,T=c=>R*Math.tan(ang(c)/2);       // deduction and setback of bend c
   let a=0;
   for(let i=1;i<=n;i++)if(elb.has(i)){cuts.push([a,i-1]);a=i;rows[i]={i,elb:true}}
   cuts.push([a,n]);
   const pieces=cuts.map(([a,b],k)=>{
     const s0=a==0?(fl.s?fl.mm:0):-E,e0=b==n?(fl.e?fl.mm:0):-E;   // flare adds length, a bought elbow takes it off
-    let prev=null,sum=0;
+    let prev=null,sum=0,dsum=0;
     for(let c=a;c<=b;c++)sum+=L(c);
     for(let c=a+1;c<=b;c++){
       let s=0;for(let j=a;j<c;j++)s+=L(j);
-      const corner=s0+s-(c-a-1)*d,nr=cross(segs[c-1][0],segs[c][0]);
+      const dc=ded(c),corner=s0+s-dsum,nr=nrm(segs[c-1][0],segs[c][0]);
+      dsum+=dc;
       let roll=0;
       if(prev){roll=Math.atan2(dot(cross(prev,nr),segs[c-1][0]),dot(prev,nr))*180/Math.PI;roll=(360-(Math.round(roll)%360+360)%360)%360}
-      prev=nr;rows[c]={i:c,piece:k+1,corner,mark:corner-d/2,roll};
+      prev=nr;rows[c]={i:c,piece:k+1,corner,mark:corner-dc/2,roll,from:"start",ded:dc,ang:ang(c)*180/Math.PI};
     }
-    return {a,b,cut:s0+sum-(b-a)*d+e0};
+    const cut=s0+sum-dsum+e0,pb=[];
+    for(let c=a+1;c<=b;c++)pb.push(rows[c]);
+    // other end: same bend seen from the far side. The roll between two neighbouring bends is the same pair, so each bend takes its neighbour's roll.
+    const rev=mode=="short"&&pb.length>0&&cut-pb.at(-1).mark<pb[0].mark-1e-6;
+    if(rev)pb.forEach((r,j)=>{const nx=pb[j+1];Object.assign(r,{mark:cut-r.mark,corner:cut-r.corner+r.ded,roll:nx?nx.roll:0,from:"end"})});
+    return {a,b,cut,from:rev?"end":"start",nb:pb.length};
   });
   segs.forEach((s,i)=>{
-    const sa=i>0?(elb.has(i)?E:d/2):0,ea=i<n?(elb.has(i+1)?E:d/2):0;
-    if(L(i)-sa-ea<0)warns.push(`Leg ${i+1} (${fmt(L(i))} mm) is too short for the bends or elbows at its ends.`);
+    const sa=i>0?(elb.has(i)?E:T(i)):0,ea=i<n?(elb.has(i+1)?E:T(i+1)):0;
+    if(L(i)-sa-ea<-1e-9)warns.push(`Leg ${i+1} (${fmt(L(i))} mm) is too short for the bends or elbows at its ends.`);
   });
+  for(const c of elb)if(c<=n&&Math.abs(ang(c)-Math.PI/2)>.01)warns.push(`Bend ${c} is ${fmt(ang(c)*180/Math.PI)}°, but the elbow amounts are for 90° elbows.`);
   return {pieces,rows:rows.slice(1),total:pieces.reduce((t,p)=>t+p.cut,0),warns};
 }
 function panel(k,t,f,axes,pts,segs,elbs){
@@ -207,11 +252,13 @@ const DEFE={"1/4":26,"3/8":27,"1/2":28,"3/4":35};
 const D=()=>({...DEF,...(U()?.ded||{})});
 const E=()=>({...DEFE,...(U()?.elb||{})});
 const F=()=>U()?.flare??3;
-let elbs=new Set();
+let elbs=new Set(),editTags=false;
+const DEFT=['1/4"','3/8"','1/2"','3/4"',"WTA","Winkel"];
+const T=()=>U()?.tags||DEFT;
 const fl0=p=>({s:p.fs!==false,e:p.fe!==false,mm:F()});
 const msg=(t,id="msg")=>{$("#"+id).textContent=t};
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg("This browser blocked saving.")}};
-const legsText=segs=>segs.map(([d,L])=>lab(d)+" "+fmt(L)).join(", ");
+const legsText=segs=>segs.map(s=>legTok(s)+(comp(s[0],s[1]).length>1?` (${fmt(s[1])} mm long)`:"")).join(", ");
 const okName=n=>n&&n!="__proto__";
 
 function render(){
@@ -222,14 +269,15 @@ function render(){
     const segs=parse($("#path").value),n=segs.length-1;
     for(const b of [...elbs])if(b>n)elbs.delete(b);
     const fs=$("#fs").checked,fe=$("#fe").checked,fl={s:fs,e:fe,mm:F()},em=E()[size];
-    const r=calc(segs,d,em,fl,elbs),mp=r.pieces.length>1;
+    const r=calc(segs,d,em,fl,elbs,$("#meas").value),mp=r.pieces.length>1;
     cur={size,d,segs,elb:[...elbs],fs,fe};
     const ft=[fs?"start":"",fe?"end":""].filter(Boolean).join(" and ");
     out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut${mp?" in total":""}</small></p>
-<p class="legs">Legs: ${legsText(segs)}. ${r.rows.filter(b=>!b.elb).length==1?"1 bend":r.rows.filter(b=>!b.elb).length+" bends"} at ${fmt(d)} mm each${elbs.size?`, ${elbs.size} bought elbow${elbs.size>1?"s":""} (${fmt(em)} mm off each piece end)`:""}.${ft&&fl.mm?` Includes ${fmt(fl.mm)} mm flare at the ${ft}.`:""}</p>
-${mp?`<p class="legs">${r.pieces.map((p,k)=>`Piece ${k+1} (leg${p.b>p.a?"s "+(p.a+1)+"–"+(p.b+1):" "+(p.a+1)}): ${fmt(p.cut)} mm`).join(", ")}.</p>`:""}
-<table><tr><th>Bend</th><th>Elbow</th>${mp?"<th>Piece</th>":""}<th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.rows.map(b=>`<tr><td>${b.i}</td><td><input type="checkbox" data-b="${b.i}"${b.elb?" checked":""} aria-label="Bought elbow at bend ${b.i}"></td>${mp?`<td>${b.elb?"—":b.piece}</td>`:""}${b.elb?"<td>—</td><td>—</td><td>—</td>":`<td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td>`}</tr>`).join("")}</table>
-<p class="hint">Tick Elbow where you use a bought elbow instead of bending: the pipe is cut there into separate pieces. Mark is where to bend, measured from the start of its piece (centre of the bend, flare included). Corner is the virtual corner on the shortened piece. Roll is how far to turn the piece clockwise about its own axis (looking from its start toward its end) before the bend, relative to the previous bend in that piece.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
+<p class="legs">Legs: ${legsText(segs)}. ${r.rows.filter(b=>!b.elb).length==1?"1 bend":r.rows.filter(b=>!b.elb).length+" bends"}, ${fmt(d)} mm per 90° bend${r.rows.some(b=>!b.elb&&Math.abs(b.ang-90)>.05)?" (other angles scaled)":""}${elbs.size?`, ${elbs.size} bought elbow${elbs.size>1?"s":""} (${fmt(em)} mm off each piece end)`:""}.${ft&&fl.mm?` Includes ${fmt(fl.mm)} mm flare at the ${ft}.`:""}</p>
+${mp?`<p class="legs">${r.pieces.map((p,k)=>`Piece ${k+1} (leg${p.b>p.a?"s "+(p.a+1)+"–"+(p.b+1):" "+(p.a+1)}): ${fmt(p.cut)} mm${p.nb?", marks from the "+p.from:""}`).join("; ")}.</p>`:""}
+${!mp&&r.pieces[0].nb?`<p class="legs">Marks are measured from the ${r.pieces[0].from} of the tube${$("#meas").value=="short"?" (the shorter end)":""}.</p>`:""}
+<table><tr><th>Bend</th><th>Elbow</th>${mp?"<th>Piece</th>":""}<th>From</th><th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.rows.map(b=>`<tr><td>${b.i}${b.ang&&Math.abs(b.ang-90)>.05?` <small>${fmt(b.ang)}°</small>`:""}</td><td><input type="checkbox" data-b="${b.i}"${b.elb?" checked":""} aria-label="Bought elbow at bend ${b.i}"></td>${mp?`<td>${b.elb?"—":b.piece}</td>`:""}${b.elb?"<td>—</td><td>—</td><td>—</td><td>—</td>":`<td>${b.from}</td><td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td>`}</tr>`).join("")}</table>
+<p class="hint">Tick Elbow where you use a bought elbow instead of bending: the pipe is cut there into separate pieces. Mark is where to bend, measured from the end named in the From column (centre of the bend, flare included). Corner is the virtual corner on the shortened piece. Roll is how far to turn the piece clockwise about its own axis (looking from its start toward its end) before the bend, relative to the previous bend in that piece.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
     $("#views").innerHTML=draw(segs,elbs);
   }catch(e){cur=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
 }
@@ -250,7 +298,11 @@ function tbl(){
   const grp=(t,k,o)=>`<h3 class="g">${t}</h3>`+Object.entries(o).map(([s,v])=>`<div><label>${s}"</label><input type="number" step="any" inputmode="decimal" data-k="${k}" data-s="${s}" value="${v}"${dis}></div>`).join("");
   $("#tbl").innerHTML=grp("Bend deduction (mm per bend)","ded",D())+grp("Bought elbow (mm off each piece end)","elb",E())+`<h3 class="g">Flare</h3><div><label>mm added per flared end</label><input type="number" step="any" inputmode="decimal" data-k="flare" value="${F()}"${dis}></div>`;
 }
-function refresh(){users();tbl();list();render()}
+function tags(){
+  $("#tags").innerHTML=T().map((s,i)=>`<span class="tag"><button type="button" data-a="use" data-t="${i}">${esc(s)}</button>${editTags?`<button type="button" class="x" data-a="rm" data-t="${i}" aria-label="Remove tag ${esc(s)}">×</button>`:""}</span>`).join("")+`<button type="button" class="tg" id="tedit">${editTags?"Done":"Edit tags"}</button>`;
+  $("#tadd").hidden=!editTags;
+}
+function refresh(){users();tbl();list();tags();render()}
 
 $("#user").onchange=()=>{db.current=$("#user").value;store();msg("");msg("","umsg");refresh()};
 const create=()=>{
@@ -262,6 +314,22 @@ const create=()=>{
   msg(had?`"${n}" already exists. Switched to them.`:`Created user "${n}".`,"umsg");
 };
 $("#create").onclick=create;
+$("#tags").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.id=="tedit"){if(!U()&&!editTags)return msg("Create or choose a user first to edit tags.");editTags=!editTags;return tags()}
+  const i=+b.dataset.t,t=T();
+  if(b.dataset.a=="use"){const n=$("#name"),v=n.value.trim();n.value=v?v+" "+t[i]:t[i];msg("")}
+  else{U().tags=t.filter((_,j)=>j!=i);store();tags()}
+};
+const addTag=()=>{
+  const v=$("#newtag").value.trim();
+  if(!U())return msg("Create or choose a user first to edit tags.");
+  if(!v)return;
+  if(T().includes(v))return msg(`Tag "${v}" already exists.`);
+  U().tags=[...T(),v];$("#newtag").value="";store();tags();msg("");
+};
+$("#tagadd").onclick=addTag;
+$("#newtag").onkeydown=e=>{if(e.key=="Enter")addTag()};
 $("#newuser").onkeydown=e=>{if(e.key=="Enter")create()};
 $("#deluser").onclick=()=>{
   if(!U()||!confirm(`Delete user "${db.current}" and all their saved pipes?`))return;
@@ -272,7 +340,7 @@ $("#tbl").oninput=e=>{
   if(k&&U()&&e.target.value!==""){if(k=="flare")U().flare=+e.target.value;else(U()[k]??={})[s]=+e.target.value;store();render();list()}
 };
 $("#out").onchange=e=>{const b=+e.target.dataset.b;if(b){e.target.checked?elbs.add(b):elbs.delete(b);render()}};
-["#path","#size","#ded","#fs","#fe"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
+["#path","#size","#ded","#fs","#fe","#meas"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
 $("#save").onclick=()=>{
   const n=$("#name").value.trim();
   if(!U())return msg("Create or choose a user first.");
@@ -286,7 +354,7 @@ $("#list").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   const n=b.dataset.n,p=U().pipes[n];
   if(b.dataset.a=="del"){if(confirm(`Delete "${n}"?`)){delete U().pipes[n];store();list()}}
-  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=legsText(p.legs).replace(/,/g,"");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
+  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=p.legs.map(legTok).join(" ");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
 };
 const exportJson=(users,file)=>{
   const a=document.createElement("a");
@@ -313,12 +381,45 @@ $("#file").onchange=async e=>{
     for(const n in us){
       const t=db.users[n]??={pipes:{},ded:{}};
       Object.assign(t.pipes,us[n].pipes);Object.assign(t.ded,us[n].ded||{});
+      Object.assign(t.elb??={},us[n].elb||{});if(typeof us[n].flare=="number")t.flare=us[n].flare;
+      if(Array.isArray(us[n].tags))t.tags=[...new Set([...(t.tags||DEFT),...us[n].tags.filter(x=>typeof x=="string")])];
     }
     if(!U())db.current=Object.keys(db.users)[0]||"";
     store();refresh();msg(`Imported ${Object.keys(us).length} user(s).`,"fmsg");
   }catch(x){msg("That file is not a Bendmarks backup.","fmsg")}
   e.target.value="";
 };
+function step(){
+  const g=id=>$(id).value===""?null:+$(id).value;
+  const a=$("#da").value,o=$("#do").value,D=g("#dd"),F=g("#df"),s1=g("#d1")??0,s2=g("#d2")??0;
+  if(a==o)throw "Pick two different axes.";
+  if(!D||!F)throw "Fill in the distance along and the sideways offset.";
+  if(s1<0||s2<0)throw "Straights cannot be negative.";
+  const span=Math.abs(D),off=Math.abs(F);
+  let run=span-s1-s2,e=s2;
+  if($("#d45").checked){run=off;e=span-s1-run;if(e<0)throw `Too short for 45° bends: the start straight plus the diagonal need ${fmt(s1+run)} mm.`}
+  else if(run<=0)throw `The straights (${fmt(s1+s2)} mm) leave no room for the diagonal.`;
+  const ang=Math.atan2(off,run)*180/Math.PI;
+  return {a,o,sa:D<0?"-":"+",so:F<0?"-":"+",s1,e,run,off,ang,len:Math.hypot(run,off)};
+}
+function stepInfo(){
+  try{
+    const s=step();
+    $("#dinfo").textContent=`Diagonal: ${fmt(s.run)} along ${s.a} and ${fmt(s.off)} in ${s.o}, ${fmt(s.len)} mm long, two bends of ${fmt(s.ang)}°.`+($("#d45").checked?` End straight becomes ${fmt(s.e)} mm.`:Math.abs(s.ang-45)>.05?` For exactly 45° the run would have to equal the offset (${fmt(s.off)} mm); tick the box to do that.`:"");
+  }catch(e){$("#dinfo").textContent=e}
+}
+["#da","#do","#dd","#df","#d1","#d2","#d45"].forEach(s=>$(s).addEventListener("input",stepInfo));
+$("#dins").onclick=()=>{
+  try{
+    const s=step(),tk=(sg,ax,v)=>sg+ax+num(v),parts=[];
+    if(s.s1)parts.push(tk(s.sa,s.a,s.s1));
+    parts.push(tk(s.so,s.o,s.off)+"/"+tk(s.sa,s.a,s.run));
+    if(s.e)parts.push(tk(s.sa,s.a,s.e));
+    $("#path").value=($("#path").value.trim()+" "+parts.join(" ")).trim();
+    msg("Added to the path: "+parts.join(" "));render();
+  }catch(e){$("#dinfo").textContent=e}
+};
+stepInfo();
 refresh();
 </script>
 </body>

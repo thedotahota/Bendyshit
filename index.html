@@ -46,6 +46,10 @@ svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-rad
 .tag .x{border-left:1px solid var(--cu);padding:8px 11px}
 .tg{border:1px dashed var(--cu);border-radius:999px}
 #tadd{margin-top:8px}
+#skpad{touch-action:none;user-select:none;-webkit-user-select:none;background:var(--card);cursor:crosshair;margin-top:8px}
+.raw{fill:none;stroke:var(--mute);stroke-width:2;stroke-dasharray:4 4}
+.sk{stroke:var(--cu);stroke-width:4;stroke-linecap:round}.sk.sel{stroke:var(--ink);stroke-width:6}
+#sked{margin-top:10px;padding-top:6px;border-top:1px solid var(--line)}
 details summary{cursor:pointer;font-weight:600}
 </style>
 </head>
@@ -62,6 +66,29 @@ details summary{cursor:pointer;font-weight:600}
 <div class="inl"><input id="newuser" placeholder="Name" autocomplete="off"><button class="p" id="create">Create user</button></div>
 <button id="deluser">Delete this user</button>
 <p class="ok" id="umsg" role="status"></p>
+</section>
+
+<section>
+<details open><summary><strong>Draw the pipe</strong></summary>
+<p class="hint">Sketch with your finger: → is +x, ↗ is +y (away from you), ↓ is +z (down). The opposite strokes ← ↙ ↑ give −x, −y and −z, and ↖ ↘ snap to the nearest of these. Draw one leg per stroke, or the whole shape in one go. Then tap a line to enter its length or its start and end coordinate.</p>
+<svg id="skpad" viewBox="0 0 340 300" role="img" aria-label="Drawing pad">
+<defs><marker id="skm" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--cu)"/></marker><marker id="skl" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--mute)"/></marker></defs>
+<g opacity=".8"><line class="ax" x1="14" y1="40" x2="52" y2="40" marker-end="url(#skl)"/><text class="at" x="62" y="44">x</text><line class="ax" x1="14" y1="40" x2="38" y2="16" marker-end="url(#skl)"/><text class="at" x="46" y="14">y</text><line class="ax" x1="14" y1="40" x2="14" y2="78" marker-end="url(#skl)"/><text class="at" x="14" y="92">z</text></g>
+<g id="skg"></g><polyline id="skraw" class="raw"/>
+</svg>
+<div id="sked" hidden>
+<h3 id="sktitle"></h3>
+<div class="row">
+<div><label for="sklen">Length (mm)</label><input id="sklen" type="number" step="any" inputmode="decimal"></div><div></div>
+<div><label for="sks">or start coordinate</label><input id="sks" type="number" step="any" inputmode="decimal"></div>
+<div><label for="ske">end coordinate</label><input id="ske" type="number" step="any" inputmode="decimal"></div>
+</div>
+<p class="hint">Start and end only give the length (end minus start). The direction comes from your drawing.</p>
+<button type="button" class="p" id="skdone">Next leg</button><button type="button" id="skflip">Flip direction</button><button type="button" id="skdel">Delete leg</button>
+</div>
+<p class="legs" id="skinfo"></p>
+<button type="button" id="skundo">Undo last leg</button><button type="button" id="skclr">Clear</button><button type="button" id="skload">Draw current path</button>
+</details>
 </section>
 
 <section>
@@ -85,10 +112,10 @@ details summary{cursor:pointer;font-weight:600}
 <div class="row">
 <div><label for="da">Runs along</label><select id="da"><option>x</option><option>y</option><option selected>z</option></select></div>
 <div><label for="do">Steps sideways in</label><select id="do"><option>x</option><option selected>y</option><option>z</option></select></div>
-<div><label for="dd">Distance along, with straights</label><input id="dd" type="number" step="any" inputmode="decimal" placeholder="155"></div>
-<div><label for="df">Sideways offset</label><input id="df" type="number" step="any" inputmode="decimal" placeholder="51"></div>
-<div><label for="d1">Straight at start</label><input id="d1" type="number" step="any" inputmode="decimal" placeholder="40"></div>
-<div><label for="d2">Straight at end</label><input id="d2" type="number" step="any" inputmode="decimal" placeholder="40"></div>
+<div><label for="dd">Distance along, with straights (mm)</label><input id="dd" type="number" step="any" inputmode="decimal" placeholder="e.g. 155"></div>
+<div><label for="df">Sideways offset (mm)</label><input id="df" type="number" step="any" inputmode="decimal" placeholder="e.g. 51"></div>
+<div><label for="d1">Straight at start (mm)</label><input id="d1" type="number" step="any" inputmode="decimal" value="40"></div>
+<div><label for="d2">Straight at end (mm)</label><input id="d2" type="number" step="any" inputmode="decimal" value="40"></div>
 </div>
 <div class="chk"><label><input type="checkbox" id="d45"> Use exactly 45° bends (end straight takes the rest)</label></div>
 <p class="hint" id="dinfo"></p>
@@ -207,6 +234,12 @@ function calc(segs,d,E,fl,elb,mode="short"){
     const sa=i>0?(elb.has(i)?E:T(i)):0,ea=i<n?(elb.has(i+1)?E:T(i+1)):0;
     if(L(i)-sa-ea<-1e-9)warns.push(`Leg ${i+1} (${fmt(L(i))} mm) is too short for the bends or elbows at its ends.`);
   });
+  const dg=i=>comp(segs[i][0],1).length>1;
+  if(n==0&&dg(0))warns.push("This is only a diagonal leg, so there are no bend points. Add a straight at each end, for example z40 y51/z75 z40.");
+  else{
+    if(dg(0))warns.push("The diagonal at the start has no straight before it, so there is no bend point at that end. Add a straight first, for example z40.");
+    if(n>0&&dg(n))warns.push("The diagonal at the end has no straight after it, so there is no bend point at that end. Add a straight after it, for example z40.");
+  }
   for(const c of elb)if(c<=n&&Math.abs(ang(c)-Math.PI/2)>.01)warns.push(`Bend ${c} is ${fmt(ang(c)*180/Math.PI)}°, but the elbow amounts are for 90° elbows.`);
   return {pieces,rows:rows.slice(1),total:pieces.reduce((t,p)=>t+p.cut,0),warns};
 }
@@ -252,7 +285,7 @@ const DEFE={"1/4":26,"3/8":27,"1/2":28,"3/4":35};
 const D=()=>({...DEF,...(U()?.ded||{})});
 const E=()=>({...DEFE,...(U()?.elb||{})});
 const F=()=>U()?.flare??3;
-let elbs=new Set(),editTags=false;
+let elbs=new Set(),editTags=false,lastR=null,sk=[],selK=-1,raw=null,lay=null;
 const DEFT=['1/4"','3/8"','1/2"','3/4"',"WTA","Winkel"];
 const T=()=>U()?.tags||DEFT;
 const fl0=p=>({s:p.fs!==false,e:p.fe!==false,mm:F()});
@@ -270,7 +303,7 @@ function render(){
     for(const b of [...elbs])if(b>n)elbs.delete(b);
     const fs=$("#fs").checked,fe=$("#fe").checked,fl={s:fs,e:fe,mm:F()},em=E()[size];
     const r=calc(segs,d,em,fl,elbs,$("#meas").value),mp=r.pieces.length>1;
-    cur={size,d,segs,elb:[...elbs],fs,fe};
+    cur={size,d,segs,elb:[...elbs],fs,fe};lastR=r;
     const ft=[fs?"start":"",fe?"end":""].filter(Boolean).join(" and ");
     out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut${mp?" in total":""}</small></p>
 <p class="legs">Legs: ${legsText(segs)}. ${r.rows.filter(b=>!b.elb).length==1?"1 bend":r.rows.filter(b=>!b.elb).length+" bends"}, ${fmt(d)} mm per 90° bend${r.rows.some(b=>!b.elb&&Math.abs(b.ang-90)>.05)?" (other angles scaled)":""}${elbs.size?`, ${elbs.size} bought elbow${elbs.size>1?"s":""} (${fmt(em)} mm off each piece end)`:""}.${ft&&fl.mm?` Includes ${fmt(fl.mm)} mm flare at the ${ft}.`:""}</p>
@@ -279,7 +312,8 @@ ${!mp&&r.pieces[0].nb?`<p class="legs">Marks are measured from the ${r.pieces[0]
 <table><tr><th>Bend</th><th>Elbow</th>${mp?"<th>Piece</th>":""}<th>From</th><th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.rows.map(b=>`<tr><td>${b.i}${b.ang&&Math.abs(b.ang-90)>.05?` <small>${fmt(b.ang)}°</small>`:""}</td><td><input type="checkbox" data-b="${b.i}"${b.elb?" checked":""} aria-label="Bought elbow at bend ${b.i}"></td>${mp?`<td>${b.elb?"—":b.piece}</td>`:""}${b.elb?"<td>—</td><td>—</td><td>—</td><td>—</td>":`<td>${b.from}</td><td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td>`}</tr>`).join("")}</table>
 <p class="hint">Tick Elbow where you use a bought elbow instead of bending: the pipe is cut there into separate pieces. Mark is where to bend, measured from the end named in the From column (centre of the bend, flare included). Corner is the virtual corner on the shortened piece. Roll is how far to turn the piece clockwise about its own axis (looking from its start toward its end) before the bend, relative to the previous bend in that piece.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
     $("#views").innerHTML=draw(segs,elbs);
-  }catch(e){cur=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
+  }catch(e){cur=null;lastR=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
+  skInfo();
 }
 function users(){
   const names=Object.keys(db.users).sort((a,b)=>a.localeCompare(b));
@@ -354,7 +388,7 @@ $("#list").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   const n=b.dataset.n,p=U().pipes[n];
   if(b.dataset.a=="del"){if(confirm(`Delete "${n}"?`)){delete U().pipes[n];store();list()}}
-  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=p.legs.map(legTok).join(" ");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();scrollTo({top:0,behavior:"smooth"})}
+  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=p.legs.map(legTok).join(" ");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();skLoad(true);scrollTo({top:0,behavior:"smooth"})}
 };
 const exportJson=(users,file)=>{
   const a=document.createElement("a");
@@ -389,6 +423,120 @@ $("#file").onchange=async e=>{
   }catch(x){msg("That file is not a Bendmarks backup.","fmsg")}
   e.target.value="";
 };
+// ---- draw the pipe: strokes snap to x (→), y (↗ away) and z (↓ down)
+const SD={x:[1,0,0],y:[0,1,0],z:[0,0,1]},SCR={x:[1,0],y:[Math.SQRT1_2,-Math.SQRT1_2],z:[0,1]};
+const DIRN={x:["right","left"],y:["away from you","toward you"],z:["down","up"]};
+const sgn=s=>s<0?"−":"+",r1=x=>+x.toFixed(1);
+const skTok=l=>legTok([SD[l.a].map(c=>c*l.s+0),l.len]);
+const skPath=()=>sk.length&&sk.every(l=>l.len!=null)?sk.map(skTok).join(" "):null;
+const pdist=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return Math.abs(dy*(p[0]-a[0])-dx*(p[1]-a[1]))/l};
+function rdp(p,eps){                      // simplify a freehand stroke to its corners
+  if(p.length<3)return p;
+  let mi=0,md=0;
+  for(let i=1;i<p.length-1;i++){const d=pdist(p[i],p[0],p.at(-1));if(d>md){md=d;mi=i}}
+  if(md<=eps)return [p[0],p.at(-1)];
+  return [...rdp(p.slice(0,mi+1),eps).slice(0,-1),...rdp(p.slice(mi),eps)];
+}
+function skLay(){
+  if(!sk.length){lay={sc:1,P:[]};return}
+  const W=340,H=300,m=38,P=[[0,0]];
+  for(const l of sk){const q=P.at(-1),v=SCR[l.a];P.push([q[0]+v[0]*l.s*l.px,q[1]+v[1]*l.s*l.px])}
+  const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),bw=Math.max(...xs)-x0,bh=Math.max(...ys)-y0;
+  const sc=Math.min((W-2*m)/(bw||1),(H-2*m)/(bh||1),1.5),ox=(W-bw*sc)/2,oy=(H-bh*sc)/2;
+  lay={sc,P:P.map(p=>[r1(ox+(p[0]-x0)*sc),r1(oy+(p[1]-y0)*sc)])};
+}
+function skRender(){
+  skLay();let o="";
+  sk.forEach((l,i)=>{
+    const a=lay.P[i],b=lay.P[i+1];let ux=b[0]-a[0],uy=b[1]-a[1];const ul=Math.hypot(ux,uy)||1;ux/=ul;uy/=ul;
+    let nx=-uy,ny=ux;if(nx<-.01||(Math.abs(nx)<.01&&ny>0)){nx=-nx;ny=-ny}
+    const tx=r1((a[0]+b[0])/2+nx*15),ty=r1((a[1]+b[1])/2+ny*15+4),t=`${sgn(l.s)}${l.a} ${l.len==null?"?":fmt(l.len)}`;
+    o+=`<line class="sk${i==selK?" sel":""}" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" marker-end="url(#skm)"/><text class="ho" x="${tx}" y="${ty}">${t}</text><text class="ln" x="${tx}" y="${ty}">${t}</text>`;
+  });
+  if(sk.length)o+=`<circle cx="${lay.P[0][0]}" cy="${lay.P[0][1]}" r="5" fill="var(--ok)"/><circle cx="${lay.P.at(-1)[0]}" cy="${lay.P.at(-1)[1]}" r="5" fill="var(--bad)"/>`;
+  $("#skg").innerHTML=o;skEd();
+}
+function skEd(){
+  const l=sk[selK];$("#sked").hidden=!l;
+  if(!l)return;
+  $("#sktitle").textContent=`Leg ${selK+1}: ${sgn(l.s)}${l.a}, ${DIRN[l.a][l.s<0?1:0]}`;
+  for(const [id,v] of [["#sklen",l.len],["#sks",l.cs],["#ske",l.ce]])if(document.activeElement!==$(id))$(id).value=v==null?"":num(v);
+}
+function skInfo(){
+  const el=$("#skinfo");
+  if(!sk.length){el.textContent="Draw the first leg with your finger, or press Draw current path.";return}
+  const set=sk.filter(l=>l.len!=null).length;
+  if(set<sk.length){el.textContent=`${set} of ${sk.length} legs have a length. Tap a line to set it.`;return}
+  let same=false;
+  try{same=merge(sk.map(l=>[SD[l.a].map(c=>c*l.s+0),l.len])).map(legTok).join(" ")===parse($("#path").value).map(legTok).join(" ")}catch(e){}
+  if(!lastR||!same){el.textContent=lastR?"The path field no longer matches this sketch. Press Draw current path to redraw from it.":"Check the result below.";return}
+  const bs=lastR.rows.filter(b=>!b.elb).map(b=>`${b.i}: ${fmt(b.mark)}${b.from=="end"?" from the end":""}`);
+  el.textContent=`Cut length ${fmt(lastR.total)} mm${lastR.pieces.length>1?` in ${lastR.pieces.length} pieces`:""}. ${bs.length?"Bend marks, "+bs.join(", ")+".":"No bends."} Details below.`;
+}
+function skSync(){
+  skRender();
+  const p=skPath();
+  if(p){$("#path").value=p;msg("");render()}
+  skInfo();
+}
+function skLoad(quiet){
+  try{
+    const legs=parse($("#path").value).map(([d,L])=>{
+      const c=comp(d,1);if(c.length!=1)throw "Diagonal steps can't be shown in the sketch pad.";
+      return {a:c[0][1],s:c[0][0]<0?-1:1,px:L,len:L,cs:null,ce:null};
+    });
+    sk=legs;selK=-1;skRender();skInfo();
+  }catch(e){if(!quiet){sk=[];selK=-1;skRender();$("#skinfo").textContent=String(e)}}
+}
+function skTap(p){
+  let best=-1,bd=22;
+  sk.forEach((_,i)=>{
+    const a=lay.P[i],b=lay.P[i+1],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));
+    const d=Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);if(d<bd){bd=d;best=i}
+  });
+  selK=best;skRender();
+  if(best>=0)setTimeout(()=>$("#sklen").focus(),0);
+}
+function skEnd(){
+  const pts=raw;raw=null;$("#skraw").setAttribute("points","");
+  if(!pts)return;
+  const total=pts.reduce((t,p,i)=>i?t+Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1]):0,0);
+  if(total<12)return skTap(pts[0]);                       // a tap, not a stroke
+  const sc=lay?lay.sc:1,simp=rdp(pts,14);let fresh=null;
+  for(let i=1;i<simp.length;i++){
+    const dx=simp[i][0]-simp[i-1][0],dy=simp[i][1]-simp[i-1][1],l=Math.hypot(dx,dy);
+    if(l<20)continue;
+    let best=null;
+    for(const a of "xyz")for(const s of [1,-1]){const c=(dx*SCR[a][0]+dy*SCR[a][1])*s/l;if(!best||c>best.c)best={a,s,c}}
+    const px=l*best.c/sc;
+    if(fresh&&fresh.a==best.a&&fresh.s==best.s)fresh.px+=px;
+    else{fresh={a:best.a,s:best.s,px,len:null,cs:null,ce:null};sk.push(fresh)}
+  }
+  if(!fresh)return;
+  selK=sk.findIndex(l=>l.len==null);skSync();
+}
+const pad=$("#skpad"),skPt=e=>{const r=pad.getBoundingClientRect();return [(e.clientX-r.left)*340/r.width,(e.clientY-r.top)*300/r.height]};
+pad.onpointerdown=e=>{pad.setPointerCapture?.(e.pointerId);raw=[skPt(e)]};
+pad.onpointermove=e=>{if(raw){raw.push(skPt(e));$("#skraw").setAttribute("points",raw.map(p=>p.map(r1).join(",")).join(" "))}};
+pad.onpointerup=e=>{if(raw)raw.push(skPt(e));skEnd()};
+pad.onpointercancel=()=>{raw=null;$("#skraw").setAttribute("points","")};
+const skSet=fn=>{const l=sk[selK];if(l){fn(l);skSync()}};
+$("#sklen").oninput=()=>skSet(l=>{const v=+$("#sklen").value;l.len=v>0?v:null;l.cs=l.ce=null;$("#sks").value=$("#ske").value=""});
+$("#sks").oninput=$("#ske").oninput=()=>skSet(l=>{
+  const a=$("#sks").value,b=$("#ske").value;
+  l.cs=a===""?null:+a;l.ce=b===""?null:+b;
+  if(a!==""&&b!==""&&+a!=+b)l.len=Math.abs(+b-+a);
+});
+$("#skflip").onclick=()=>skSet(l=>{l.s*=-1});
+$("#skdel").onclick=()=>{if(sk[selK]){sk.splice(selK,1);selK=-1;skSync()}};
+$("#skdone").onclick=()=>{
+  const nx=sk.findIndex((l,i)=>i>selK&&l.len==null);
+  selK=nx>=0?nx:sk.findIndex(l=>l.len==null);skRender();
+};
+$("#skundo").onclick=()=>{sk.pop();selK=-1;skSync()};
+$("#skclr").onclick=()=>{sk=[];selK=-1;skRender();skInfo()};
+$("#skload").onclick=()=>skLoad(false);
+skRender();
 function step(){
   const g=id=>$(id).value===""?null:+$(id).value;
   const a=$("#da").value,o=$("#do").value,D=g("#dd"),F=g("#df"),s1=g("#d1")??0,s2=g("#d2")??0;
@@ -405,7 +553,7 @@ function step(){
 function stepInfo(){
   try{
     const s=step();
-    $("#dinfo").textContent=`Diagonal: ${fmt(s.run)} along ${s.a} and ${fmt(s.off)} in ${s.o}, ${fmt(s.len)} mm long, two bends of ${fmt(s.ang)}°.`+($("#d45").checked?` End straight becomes ${fmt(s.e)} mm.`:Math.abs(s.ang-45)>.05?` For exactly 45° the run would have to equal the offset (${fmt(s.off)} mm); tick the box to do that.`:"");
+    $("#dinfo").textContent=`Diagonal: ${fmt(s.run)} along ${s.a} and ${fmt(s.off)} in ${s.o}, ${fmt(s.len)} mm long, two bends of ${fmt(s.ang)}°.`+($("#d45").checked?` End straight becomes ${fmt(s.e)} mm.`:Math.abs(s.ang-45)>.05?` For exactly 45° the run would have to equal the offset (${fmt(s.off)} mm); tick the box to do that.`:"")+(!s.s1||!s.e?` A straight of 0 at ${!s.s1&&!s.e?"both ends":!s.s1?"the start":"the end"} means no bend point there: the bends sit where the diagonal meets a straight.`:"");
   }catch(e){$("#dinfo").textContent=e}
 }
 ["#da","#do","#dd","#df","#d1","#d2","#d45"].forEach(s=>$(s).addEventListener("input",stepInfo));

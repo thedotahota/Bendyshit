@@ -2,113 +2,206 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bendmarks</title>
 <style>
-:root{--bg:#eef1f0;--ink:#17262b;--mute:#5a6b6f;--card:#fff;--line:#cdd7d5;--cu:#b4531f;--on:#fff;--ok:#2a8a4a;--bad:#c23b2e}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1a1d;--ink:#e6eeee;--mute:#8fa3a6;--card:#16262a;--line:#2a3e42;--cu:#e08a4f;--on:#1a0e06;--ok:#5cc17c;--bad:#ff8a7a}}
+:root{--bg:#eef1f0;--ink:#17262b;--mute:#566a6e;--card:#fff;--line:#c9d4d2;--cu:#b4531f;--on:#fff;--ok:#2a8a4a;--bad:#c23b2e}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a1d;--ink:#e6eeee;--mute:#9bb0b3;--card:#16262a;--line:#2f4347;--cu:#e08a4f;--on:#1a0e06;--ok:#5cc17c;--bad:#ff8a7a}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px 40px}
-main{max-width:760px;margin:0 auto}
-h1{font-size:1.7rem;margin:8px 0 2px;letter-spacing:-.01em}
-h2{font-size:1.05rem;margin:0 0 10px}
-h3{font-size:.85rem;font-weight:600;color:var(--mute);margin:0 0 4px}
-.sub{color:var(--mute);margin:0 0 18px}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 16px}
-label{display:block;font-size:.9rem;color:var(--mute);margin:10px 0 3px}
-input,select{width:100%;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
-input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--cu);outline-offset:2px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{font:inherit;font-weight:600;padding:9px 14px;border-radius:6px;border:1px solid var(--cu);background:transparent;color:var(--cu);cursor:pointer;margin:12px 8px 0 0}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit}
+button{min-height:44px;padding:8px 14px;border-radius:8px;border:1px solid var(--cu);background:transparent;color:var(--cu);font-weight:600;cursor:pointer;margin:0}
 button.p{background:var(--cu);color:var(--on)}
-.big{font-size:2.2rem;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
-.big small{font-size:1rem;font-weight:400;color:var(--mute)}
-.legs,.hint{color:var(--mute);font-size:.9rem;margin:4px 0 10px}
-.err{color:var(--bad);margin:10px 0 0}.warn{color:var(--bad);font-size:.9rem;margin:6px 0 0}.ok{color:var(--ok);margin:10px 0 0;min-height:1.5em}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th,td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
-th{font-size:.85rem;color:var(--mute);font-weight:600}
-#views{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-top:8px}
-svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}
-.ax{stroke:var(--mute);stroke-width:1.5}.at{fill:var(--mute);font-size:12px;text-anchor:middle}
-.pipe{fill:none;stroke:var(--cu);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.bd{fill:var(--card);stroke:var(--cu);stroke-width:2}.bn{fill:var(--ink);font-size:11px;text-anchor:middle}
-.ln{fill:var(--ink);font-size:11px;text-anchor:middle}.ho{stroke:var(--card);stroke-width:4;fill:var(--card);font-size:11px;text-anchor:middle}
-.saved{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.saved div{flex:1;min-width:0}.saved button{margin:0;padding:6px 10px}.saved small{color:var(--mute)}
-.inl{display:flex;gap:8px}.inl button{margin:0;white-space:nowrap}
-.chk{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}.chk label{display:flex;gap:6px;align-items:center;margin:0;color:var(--ink)}input[type=checkbox]{width:auto;accent-color:var(--cu)}
-.g{grid-column:1/-1;margin:12px 0 0}.bd.el{fill:var(--cu)}.bn.e{fill:var(--on)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cu);outline-offset:2px}
+input,select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+input[type=checkbox]{width:24px;min-height:24px;height:24px;accent-color:var(--cu)}
+label{display:block;font-size:.9rem;color:var(--mute);margin:10px 0 3px}
+h2{font-size:1.2rem;margin:0 0 10px}h3{font-size:.95rem;margin:18px 0 6px;color:var(--mute)}
 [hidden]{display:none!important}
-#tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.tag{display:inline-flex;border:1px solid var(--cu);border-radius:999px;overflow:hidden}
-.tag button,.tg{margin:0;border:0;border-radius:0;padding:8px 13px;font-weight:500;background:transparent;color:var(--cu)}
-.tag .x{border-left:1px solid var(--cu);padding:8px 11px}
-.tg{border:1px dashed var(--cu);border-radius:999px}
-#tadd{margin-top:8px}
-#skpad{touch-action:none;user-select:none;-webkit-user-select:none;background:var(--card);cursor:crosshair;margin-top:8px}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#stage{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;overflow:auto;padding:calc(62px + env(safe-area-inset-top)) 14px 24px;display:none}
+.view.on{display:block}
+#vcanvas{padding:0;overflow:hidden}
+.ib{position:static;width:46px;min-height:46px;height:46px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.25rem;display:grid;place-items:center;box-shadow:0 1px 4px #0003}
+#bMenu,#bInfo{position:absolute;top:calc(8px + env(safe-area-inset-top));z-index:30}
+#bMenu{left:8px}#bInfo{right:8px;font-family:Georgia,serif;font-style:italic;font-weight:700}
+#ttl{position:absolute;top:calc(8px + env(safe-area-inset-top));left:64px;right:64px;height:46px;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:20;pointer-events:none}
+nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;min-height:58px;border:0;border-radius:0;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:.78rem;font-weight:600}
+nav button b{font-size:1.3rem;line-height:1.1}
+nav button[aria-current=true]{color:var(--cu);box-shadow:inset 0 3px 0 var(--cu)}
+#skpad{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--card);cursor:crosshair}
+#skpad.lock{cursor:pointer}
+.ax{stroke:var(--mute);stroke-width:1.5}.at{fill:var(--mute);font-size:13px;text-anchor:middle}
 .raw{fill:none;stroke:var(--mute);stroke-width:2;stroke-dasharray:4 4}
-.sk{stroke:var(--cu);stroke-width:4;stroke-linecap:round}.sk.sel{stroke:var(--ink);stroke-width:6}
-#sked{margin-top:10px;padding-top:6px;border-top:1px solid var(--line)}
-details summary{cursor:pointer;font-weight:600}
+.sk{stroke:var(--cu);stroke-width:5;stroke-linecap:round}.sk.sel{stroke:var(--ink);stroke-width:7}
+.ho{stroke:var(--card);stroke-width:4;fill:var(--card);font-size:14px;text-anchor:middle}.ln{fill:var(--ink);font-size:14px;font-weight:600;text-anchor:middle}
+#hint0{position:absolute;left:0;right:0;top:42%;text-align:center;color:var(--mute);pointer-events:none;font-size:1.1rem}
+.ov{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;pointer-events:none;z-index:6}
+.ov>*{pointer-events:auto}.ov .l{display:flex;gap:8px}
+.big{min-width:130px;min-height:52px;font-size:1.05rem;box-shadow:0 2px 8px #0003}
+#bClear{background:var(--card)}
+#szc{position:absolute;top:calc(10px + env(safe-area-inset-top));left:62px;right:62px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;z-index:6;pointer-events:none}
+#szc>*{pointer-events:auto}
+#stat{position:absolute;top:calc(62px + env(safe-area-inset-top));left:0;right:0;text-align:center;z-index:5;pointer-events:none}
+#stat span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.85rem;color:var(--mute)}
+.sz{display:inline-flex;align-items:center;justify-content:center;min-width:50px;min-height:40px;padding:2px 10px;border-radius:999px;background:var(--c);color:#fff;font-weight:700;border:2px solid var(--c)}
+button.sz{margin:0;cursor:pointer}button.sz[aria-pressed=false]{background:var(--card);color:var(--c)}
+#legEd{position:absolute;left:10px;right:10px;bottom:10px;z-index:9;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 4px 18px #0005}
+#legEd .r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}#legEd label{margin:4px 0 2px}
+#legEd .bt{display:flex;gap:8px;margin-top:10px}#legEd .bt button{flex:1}
+.modal{position:fixed;inset:0;z-index:60;background:#0007;display:flex;align-items:center;justify-content:center;padding:12px}
+.card{background:var(--card);border-radius:14px;padding:16px;width:min(560px,100%);max-height:88vh;overflow:auto}
+.card .bt{display:flex;gap:8px;margin-top:12px}.card .bt button{flex:1}
+#infoCard{position:fixed;z-index:40;top:calc(62px + env(safe-area-inset-top));right:8px;width:min(340px,calc(100vw - 16px));background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 4px 18px #0005;font-size:.92rem}
+#menuBg{position:fixed;inset:0;z-index:50;background:#0006;display:none}
+#menu{position:fixed;z-index:51;top:0;bottom:0;left:0;width:min(300px,86vw);background:var(--card);padding:calc(14px + env(safe-area-inset-top)) 14px 14px;transform:translateX(-102%);transition:transform .2s}
+#menu.on{transform:none}#menu.on+#menuBg,#menuBg.on{display:block}
+#menu button{width:100%;text-align:left;margin:0 0 8px}#menu .who{color:var(--mute);margin:0 0 14px}
+@media (prefers-reduced-motion:reduce){#menu{transition:none}}
+#toast{position:fixed;z-index:70;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;max-width:90vw;font-size:.92rem}
+.hint,small{color:var(--mute)}.hint{font-size:.9rem}
+.err{color:var(--bad);font-weight:600}
+.empty{text-align:center;margin-top:18vh;color:var(--mute)}.empty button{margin:8px 4px}
+.inl{display:flex;gap:8px}.inl button{white-space:nowrap}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.g4 label{margin:0;font-size:.8rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fit{border:1px solid var(--line);border-radius:10px;padding:8px;margin:0 0 8px}.fit b{display:inline-block;margin:0 10px 4px 0}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.tag{display:inline-flex;border:1px solid var(--cu);border-radius:999px;overflow:hidden}
+.tag button,.tg{border:0;border-radius:0;color:var(--cu);padding:6px 14px;min-height:40px;background:transparent}
+.tag .x{border-left:1px solid var(--cu);padding:6px 12px}.tag .t2{padding:8px 14px;color:var(--cu)}
+.tg{border:1px dashed var(--cu);border-radius:999px}
+.mh{display:flex;gap:14px;align-items:center;margin-bottom:6px}
+.pvb{width:130px;height:74px;flex:none;border:1px solid var(--line);border-radius:10px;color:var(--cu);background:var(--card)}
+.pvb svg,.pv svg{width:100%;height:100%;display:block}
+.cutl{font-size:2.4rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}.cutl small{font-size:1rem;font-weight:500}
+.marks{list-style:none;margin:0;padding:0}.marks li{display:flex;justify-content:space-between;gap:8px;padding:10px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;font-size:1.1rem}
+.warn{color:var(--bad);font-weight:600;margin:8px 0}
+.ends{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ends>div{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.ck{display:flex;align-items:center;gap:10px;margin:6px 0;color:var(--ink);font-size:1rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+#sheet{max-width:210mm;margin:8px auto 0}
+.prow{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px 4px;margin:0 0 10px}
+.prow.drag{opacity:.7;outline:2px dashed var(--cu)}
+.ph{display:grid;grid-template-columns:auto auto 78px 1fr auto;gap:10px;align-items:center}
+.pv{width:78px;height:44px;color:var(--ink)}
+.pn b{display:block;overflow-wrap:anywhere}.pn small{display:block}
+.grab{min-height:44px;width:34px;padding:0;border-color:var(--line);color:var(--mute);cursor:grab;touch-action:none}
+.pa{display:flex;flex-direction:column;gap:4px}.pa button{min-height:34px;padding:2px 10px;font-size:.85rem}
+.pline{position:relative;height:62px;margin:0 24px;border-bottom:2px solid var(--ink)}
+.tk{position:absolute;bottom:-2px;height:16px;border-left:2px solid var(--ink)}
+.tl{position:absolute;bottom:20px;transform:translateX(-50%);white-space:nowrap;font-size:.85rem;font-weight:600}.tl.l1{bottom:38px}.tl.end{transform:translateX(-100%)}
+.pfrom{font-size:.72rem;color:var(--mute);margin:2px 0 0 24px}
+.shead{display:none}
+@page{size:A4;margin:10mm}
+@media print{
+ html,body{height:auto}
+ body{background:#fff;color:#000;overflow:visible}
+ #app{position:static;display:block}
+ #app>*:not(#stage),.modal,#toast,#infoCard,#menu,#menuBg{display:none!important}
+ #stage{position:static}.view{position:static!important;display:none!important;padding:0!important;overflow:visible!important}
+ #vprint{display:block!important}.noprint{display:none!important}
+ #sheet{max-width:none;margin:0}.shead{display:block;font-size:10pt;margin:0 0 3mm}
+ .prow{height:32mm;border:0;border-bottom:.3mm solid #000;border-radius:0;margin:0;padding:1.5mm 0 0;break-inside:avoid;background:#fff;color:#000}
+ .ph{grid-template-columns:auto 26mm 1fr;height:14mm;gap:4mm}.pv{width:26mm;height:13mm;color:#000}
+ .sz{background:#fff!important;color:#000!important;border:.3mm solid #000;min-height:8mm}
+ .pline{height:15mm;margin:0 6mm;border-color:#000}.tk{border-color:#000;height:5mm}.tl{font-size:10.5pt;bottom:6mm}.tl.l1{bottom:11mm}
+ .pfrom{font-size:7pt;margin-left:6mm;color:#000}
+}
 </style>
 </head>
 <body>
-<main>
-<h1>Bendmarks</h1>
-<p class="sub">Bend marks and cut length for tube with 90° bends. All lengths in mm.</p>
+<div id="app">
+<button id="bMenu" class="ib" aria-label="Menu">☰</button>
+<span id="ttl" hidden></span>
+<button id="bInfo" class="ib" aria-label="Information about this screen">i</button>
 
-<section>
-<h2>User</h2>
-<label for="user">Current user</label>
-<select id="user"></select>
-<label for="newuser">New user</label>
-<div class="inl"><input id="newuser" placeholder="Name" autocomplete="off"><button class="p" id="create">Create user</button></div>
-<button id="deluser">Delete this user</button>
-<p class="ok" id="umsg" role="status"></p>
-</section>
-
-<section>
-<details open><summary><strong>Draw the pipe</strong></summary>
-<p class="hint">Sketch with your finger: → is +x, ↗ is +y (away from you), ↓ is +z (down). The opposite strokes ← ↙ ↑ give −x, −y and −z, and ↖ ↘ snap to the nearest of these. Draw one leg per stroke, or the whole shape in one go. Then tap a line to enter its length or its start and end coordinate.</p>
-<svg id="skpad" viewBox="0 0 340 300" role="img" aria-label="Drawing pad">
-<defs><marker id="skm" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--cu)"/></marker><marker id="skl" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--mute)"/></marker></defs>
-<g opacity=".8"><line class="ax" x1="14" y1="40" x2="52" y2="40" marker-end="url(#skl)"/><text class="at" x="62" y="44">x</text><line class="ax" x1="14" y1="40" x2="38" y2="16" marker-end="url(#skl)"/><text class="at" x="46" y="14">y</text><line class="ax" x1="14" y1="40" x2="14" y2="78" marker-end="url(#skl)"/><text class="at" x="14" y="92">z</text></g>
+<div id="stage">
+<div id="vcanvas" class="view on">
+<svg id="skpad" viewBox="0 0 400 480" role="img" aria-label="Drawing area">
+<defs><marker id="skm" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M0,0L12,6L0,12z" fill="var(--cu)"/></marker><marker id="skl" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--mute)"/></marker></defs>
 <g id="skg"></g><polyline id="skraw" class="raw"/>
 </svg>
-<div id="sked" hidden>
-<h3 id="sktitle"></h3>
-<div class="row">
-<div><label for="sklen">Length (mm)</label><input id="sklen" type="number" step="any" inputmode="decimal"></div><div></div>
-<div><label for="sks">or start coordinate</label><input id="sks" type="number" step="any" inputmode="decimal"></div>
-<div><label for="ske">end coordinate</label><input id="ske" type="number" step="any" inputmode="decimal"></div>
+<div id="hint0">Draw the pipe with your finger</div>
+<div id="szc" hidden></div>
+<div id="stat"></div>
+<div id="ovd" class="ov">
+<div class="l"><button id="bUndo" class="ib" aria-label="Undo">↶</button><button id="bRedo" class="ib" aria-label="Redo">↷</button></div>
+<button id="bClear">Clear</button>
+<button id="bAccept" class="p big">✓ Accept</button><button id="bEdit" class="big" hidden>✎ Edit</button>
 </div>
-<p class="hint">Start and end only give the length (end minus start). The direction comes from your drawing.</p>
-<button type="button" class="p" id="skdone">Next leg</button><button type="button" id="skflip">Flip direction</button><button type="button" id="skdel">Delete leg</button>
+<div id="ovl" class="ov" hidden><button id="bPath" style="background:var(--card)">⌨ Path</button></div>
+<div id="legEd" hidden role="dialog" aria-label="Edit pipe section">
+<b id="leT"></b>
+<div class="r3"><div><label for="leL">Length</label><input id="leL" type="number" step="any" inputmode="decimal"></div><div><label for="leS">Start</label><input id="leS" type="number" step="any" inputmode="decimal"></div><div><label for="leE">End</label><input id="leE" type="number" step="any" inputmode="decimal"></div></div>
+<div class="bt"><button id="leB">Back</button><button id="leF">⇄ Flip</button><button id="leA" class="p">✓ Accept</button></div>
 </div>
-<p class="legs" id="skinfo"></p>
-<button type="button" id="skundo">Undo last leg</button><button type="button" id="skclr">Clear</button><button type="button" id="skload">Draw current path</button>
-</details>
-</section>
+</div>
 
-<section>
-<h2>Pipe</h2>
-<label for="name">Name</label>
-<input id="name" placeholder="rail1" autocomplete="off">
-<div id="tags"></div>
-<div class="inl" id="tadd" hidden><input id="newtag" placeholder="New tag" maxlength="24" autocomplete="off"><button class="p" id="tagadd" type="button">Add tag</button></div>
-<div class="row">
-<div><label for="size">Tube size</label>
-<select id="size"><option>1/4</option><option>3/8</option><option selected>1/2</option><option>3/4</option></select></div>
-<div><label for="ded">Deduction per bend (mm)</label><input id="ded" type="number" step="any" inputmode="decimal" placeholder="from table"></div>
+<div id="vmake" class="view"></div>
+
+<div id="vname" class="view">
+<h2>Pipe naming</h2>
+<label for="name">Description / name</label>
+<input id="name" placeholder="e.g. WTA Winkel 1/2&quot;" autocomplete="off">
+<div id="tagsBox" data-box="n"></div>
+<div class="row2"><button id="bSave" class="p">Save pipe</button><button id="bOpenPrint">Search / print</button></div>
+<div class="row2" style="margin-top:8px"><button id="bExp">Export</button><button id="bImp">Import</button></div>
+<input id="file" type="file" accept=".json,application/json" hidden>
 </div>
-<label for="meas">Bending marks measured from</label>
-<select id="meas"><option value="short" selected>Shorter end</option><option value="start">Start of the piece</option></select>
-<div class="chk"><label><input type="checkbox" id="fs" checked> Flare at start</label><label><input type="checkbox" id="fe" checked> Flare at end</label></div>
+
+<div id="vuser" class="view">
+<h2>User</h2>
+<label for="uSel">Current user</label>
+<select id="uSel"></select>
+<div class="inl" style="margin-top:8px"><input id="uNew" placeholder="New user name" maxlength="30" autocomplete="off"><button id="uAdd" class="p">Create</button></div>
+<button id="uDel" style="margin-top:8px">Delete this user</button>
+<h3>Tags</h3>
+<div id="uTags" data-box="u"></div>
+<div id="uDed"></div>
+<button id="uExpAll" style="margin-top:14px">Export all users</button>
+</div>
+
+<div id="vprint" class="view">
+<div class="noprint">
+<h2>Print &amp; pipe search</h2>
+<input id="pQ" type="search" placeholder="Search name / description" autocomplete="off">
+<div id="pSz" class="chips"></div>
+<div class="inl"><select id="pN" aria-label="Bending points of the blank pipe"></select><button id="pBlank">Add blank pipe</button></div>
+<button id="pPrint" class="p" style="margin-top:8px;width:100%">Print / save as PDF (A4)</button>
+</div>
+<div id="sheet"></div>
+</div>
+</div>
+
+<nav aria-label="Modes">
+<button data-m="draw"><b>✎</b>Draw</button>
+<button data-m="len"><b>↔</b>Lengths</button>
+<button data-m="make"><b>✂</b>Make</button>
+<button data-m="name"><b>Aa</b>Name</button>
+</nav>
+</div>
+
+<div id="infoCard" hidden></div>
+<div id="menu" role="dialog" aria-label="Menu"><p class="who" id="who"></p>
+<button data-go="user">👤 User</button>
+<button data-go="print">🖨 Print &amp; pipe search</button>
+<button id="bBig">Aa Large text: off</button>
+</div><div id="menuBg"></div>
+<div id="toast" role="status" hidden></div>
+
+<div class="modal" id="ask" hidden><div class="card"><p id="askT"></p><div class="bt"><button id="askN">Cancel</button><button id="askY" class="p">Yes</button></div></div></div>
+<div class="modal" id="mDed" hidden><div class="card"><h2>Deductions</h2><p class="hint" id="mDedWho"></p><div id="mDedBody"></div><div class="bt"><button data-close class="p">Close</button></div></div></div>
+<div class="modal" id="mPath" hidden><div class="card">
+<h2>Path text and diagonal step</h2>
 <label for="path">Path</label>
-<input id="path" value="x490 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
-<p class="hint">+x runs left to right, +y away from you, +z downward. Give a letter and a length, like y200 (add − for the opposite direction). Two numbers after one letter, like x490 45, mean 490 minus 45, so a 445 mm leg in the + direction. A diagonal leg uses two axes with a slash, like y51/z75. The diagonal step helper below builds one for you.</p>
-<details id="dstep"><summary>Diagonal step (two bends)</summary>
+<input id="path" placeholder="x490 45 y200 z100" autocapitalize="off" autocomplete="off" spellcheck="false">
+<p class="hint">+x right, +y away, +z down. y200 = length, −y200 = opposite way, x490 45 = 490 minus 45, y51/z75 = diagonal, ? = length not set yet. The drawing and this field are always the same pipe.</p>
+<details id="dstep" open><summary>Diagonal step (two bends)</summary>
 <div class="row">
 <div><label for="da">Runs along</label><select id="da"><option>x</option><option>y</option><option selected>z</option></select></div>
 <div><label for="do">Steps sideways in</label><select id="do"><option>x</option><option selected>y</option><option>z</option></select></div>
@@ -121,39 +214,8 @@ details summary{cursor:pointer;font-weight:600}
 <p class="hint" id="dinfo"></p>
 <button type="button" id="dins" class="p">Add to path</button>
 </details>
-<button class="p" id="save">Save pipe</button>
-<p class="ok" id="msg" role="status"></p>
-</section>
-
-<section id="out" aria-live="polite"></section>
-
-<section>
-<h2>Drawing</h2>
-<div id="views"></div>
-<p class="hint">Green dot is the tube start (origin), red dot is the end, numbered circles are the bends (filled = bought elbow). In every view +x runs left to right, +y points away from you and +z points down.</p>
-</section>
-
-<section>
-<h2 id="lh">Saved pipes</h2>
-<div id="list"></div>
-</section>
-
-<section>
-<details><summary>Settings for this user</summary>
-<div class="row" id="tbl"></div>
-<p class="hint">Saved pipes keep the bend deduction they were saved with. Elbow and flare amounts are always read from here.</p>
-</details>
-</section>
-<section>
-<h2>Data file</h2>
-<p class="hint">All users, their pipes and deduction tables are stored in this browser. Export this user saves one person's pipes and deduction table as their own JSON file (bendmarks-name.json). Export all users saves everyone in one file. Import loads either kind, for example on another phone or computer.</p>
-<button id="expu" class="p">Export this user</button>
-<button id="exp">Export all users</button>
-<button id="imp">Import JSON file</button>
-<input id="file" type="file" accept=".json,application/json" hidden>
-<p class="ok" id="fmsg" role="status"></p>
-</section>
-</main>
+<div class="bt"><button data-close class="p">Close</button></div>
+</div></div>
 
 <script>
 const DEF={"1/4":8,"3/8":12,"1/2":16,"3/4":20};
@@ -212,7 +274,7 @@ function calc(segs,d,E,fl,elb,mode="short"){
   for(let i=1;i<=n;i++)if(elb.has(i)){cuts.push([a,i-1]);a=i;rows[i]={i,elb:true}}
   cuts.push([a,n]);
   const pieces=cuts.map(([a,b],k)=>{
-    const s0=a==0?(fl.s?fl.mm:0):-E,e0=b==n?(fl.e?fl.mm:0):-E;   // flare adds length, a bought elbow takes it off
+    const s0=a==0?fl.a:-E,e0=b==n?fl.b:-E;   // flare adds length, a bought elbow takes it off
     let prev=null,sum=0,dsum=0;
     for(let c=a;c<=b;c++)sum+=L(c);
     for(let c=a+1;c<=b;c++){
@@ -231,7 +293,7 @@ function calc(segs,d,E,fl,elb,mode="short"){
     return {a,b,cut,from:rev?"end":"start",nb:pb.length};
   });
   segs.forEach((s,i)=>{
-    const sa=i>0?(elb.has(i)?E:T(i)):0,ea=i<n?(elb.has(i+1)?E:T(i+1)):0;
+    const sa=i>0?(elb.has(i)?E:T(i)):Math.max(0,-fl.a),ea=i<n?(elb.has(i+1)?E:T(i+1)):Math.max(0,-fl.b);
     if(L(i)-sa-ea<-1e-9)warns.push(`Leg ${i+1} (${fmt(L(i))} mm) is too short for the bends or elbows at its ends.`);
   });
   const dg=i=>comp(segs[i][0],1).length>1;
@@ -243,300 +305,382 @@ function calc(segs,d,E,fl,elb,mode="short"){
   for(const c of elb)if(c<=n&&Math.abs(ang(c)-Math.PI/2)>.01)warns.push(`Bend ${c} is ${fmt(ang(c)*180/Math.PI)}°, but the elbow amounts are for 90° elbows.`);
   return {pieces,rows:rows.slice(1),total:pieces.reduce((t,p)=>t+p.cut,0),warns};
 }
-function panel(k,t,f,axes,pts,segs,elbs){
-  const pp=pts.map(f),us=pp.map(q=>q[0]),vs=pp.map(q=>q[1]);
-  const ext=Math.max(Math.max(...us)-Math.min(...us),Math.max(...vs)-Math.min(...vs),1),al=ext*.3;
-  const ends=Object.entries(axes).map(([a,[x,y]])=>[a,x*al,y*al]);
-  const au=[...us,0,...ends.map(e=>e[1])],av=[...vs,0,...ends.map(e=>e[2])];
-  const mu=Math.min(...au),mv=Math.min(...av),bw=Math.max(...au)-mu,bh=Math.max(...av)-mv;
-  const W=340,H=320,pad=34,aw=W-2*pad,ah=H-2*pad-14,s=Math.min(aw/(bw||1e-9),ah/(bh||1e-9));
-  const left=pad+(aw-bw*s)/2,bot=pad+14+(ah+bh*s)/2;
-  const X=u=>+(left+(u-mu)*s).toFixed(1),Y=v=>+(bot-(v-mv)*s).toFixed(1);
-  let o=`<div><h3>${t}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t} view"><defs><marker id="mk${k}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="var(--mute)"/></marker></defs>`;
-  for(const [a,eu,ev] of ends)o+=`<line class="ax" x1="${X(0)}" y1="${Y(0)}" x2="${X(eu)}" y2="${Y(ev)}" marker-end="url(#mk${k})"/><text class="at" x="${X(eu*1.14)}" y="${Y(ev*1.14)+4}">${a}</text>`;
-  o+=`<polyline class="pipe" points="${pp.map(q=>X(q[0])+","+Y(q[1])).join(" ")}"/>`;
-  pp.slice(1).forEach((q,i)=>{
-    const p=pp[i],x1=X(p[0]),y1=Y(p[1]),x2=X(q[0]),y2=Y(q[1]);
-    if(Math.hypot(x2-x1,y2-y1)>=28){const x=(x1+x2)/2,y=(y1+y2)/2-7,L=fmt(segs[i][1]);o+=`<text class="ho" x="${x}" y="${y}">${L}</text><text class="ln" x="${x}" y="${y}">${L}</text>`}
-  });
-  o+=`<circle cx="${X(pp[0][0])}" cy="${Y(pp[0][1])}" r="5" fill="var(--ok)"/><circle cx="${X(pp.at(-1)[0])}" cy="${Y(pp.at(-1)[1])}" r="5" fill="var(--bad)"/>`;
-  pp.slice(1,-1).forEach((q,i)=>{const e=elbs.has(i+1)?" el":"";o+=`<circle class="bd${e}" cx="${X(q[0])}" cy="${Y(q[1])}" r="8"/><text class="bn${e&&" e"}" x="${X(q[0])}" y="${Y(q[1])+4}">${i+1}</text>`});
-  return o+"</svg></div>";
-}
-function draw(segs,elbs=new Set()){
-  const pts=[[0,0,0]];
-  for(const [d,L] of segs){const p=pts.at(-1);pts.push([p[0]+d[0]*L,p[1]+d[1]*L,p[2]+d[2]*L])}
-  const V=[["3D view (x right, y away, z down)",p=>[p[0]+p[1]/2,-p[2]+p[1]/2],{x:[1,0],y:[.5,.5],z:[0,-1]}],
-    ["Top (X-Y)",p=>[p[0],p[1]],{x:[1,0],y:[0,1]}],
-    ["Front (X-Z)",p=>[p[0],-p[2]],{x:[1,0],z:[0,-1]}],
-    ["Side (Y-Z)",p=>[p[1],-p[2]],{y:[1,0],z:[0,-1]}]];
-  return V.map((v,k)=>panel(k,v[0],v[1],v[2],pts,segs,elbs)).join("");
-}
+
 //UI
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const KEY="bendmarks.v2";
-let db={users:{},current:""},cur=null;
-try{db={...db,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){}
-try{const o=JSON.parse(localStorage.getItem("bendmarks.v1")||"null");
-  if(o&&!Object.keys(db.users).length){db.users.Default={pipes:o.pipes||{},ded:o.ded||{}};db.current="Default"}}catch(e){}
-if(!db.users[db.current])db.current=Object.keys(db.users)[0]||"";
-const U=()=>db.users[db.current];
-const DEFE={"1/4":26,"3/8":27,"1/2":28,"3/4":35};
-const D=()=>({...DEF,...(U()?.ded||{})});
-const E=()=>({...DEFE,...(U()?.elb||{})});
-const F=()=>U()?.flare??3;
-let elbs=new Set(),editTags=false,lastR=null,sk=[],selK=-1,raw=null,lay=null;
+const SIZES=Object.keys(DEF);
+const FITD={"Elbow":{"1/4":26,"3/8":27,"1/2":28,"3/4":35},"T-piece":{"1/4":26,"3/8":27,"1/2":28,"3/4":35}};
 const DEFT=['1/4"','3/8"','1/2"','3/4"',"WTA","Winkel"];
-const T=()=>U()?.tags||DEFT;
-const fl0=p=>({s:p.fs!==false,e:p.fe!==false,mm:F()});
-const msg=(t,id="msg")=>{$("#"+id).textContent=t};
-const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg("This browser blocked saving.")}};
-const legsText=segs=>segs.map(s=>legTok(s)+(comp(s[0],s[1]).length>1?` (${fmt(s[1])} mm long)`:"")).join(", ");
-const okName=n=>n&&n!="__proto__";
+const COL={"1/4":"#0b63b0","3/8":"#b4470a","1/2":"#0a7a58","3/4":"#9c3a73"};
+let db={users:{},current:"",big:false};
+try{db={...db,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){}
+function normDb(){
+  for(const u of Object.values(db.users)){u.pipes??={};u.ded??={};u.fit??={}}
+  if(!Object.keys(db.users).length)db.users.Default={pipes:{},ded:{},fit:{}};
+  if(!db.users[db.current])db.current=Object.keys(db.users)[0];
+}
+normDb();
+const U=()=>db.users[db.current];
+const D=()=>({...DEF,...U().ded}),F=()=>U().flare??3,FIT=()=>({...FITD,...U().fit}),T=()=>U().tags||DEFT;
+const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast("This browser blocked saving.")}};
+let tt;function toast(t){const e=$("#toast");e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2600)}
+const msg=toast;
+function ask(t,fn){closeAll();$("#askT").textContent=t;$("#ask").hidden=false;$("#askY").onclick=()=>{$("#ask").hidden=true;fn()};$("#askN").onclick=()=>{$("#ask").hidden=true}}
+function closeAll(){$$(".modal").forEach(m=>m.hidden=true);$("#menu").classList.remove("on");$("#menuBg").classList.remove("on");$("#infoCard").hidden=true}
+$$(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target==m||e.target.closest("[data-close]"))m.hidden=true}));
 
+// ---------- state
+const P={size:"1/2",fs:true,fe:true,fitS:"",fitE:"",meas:"short"};
+let cur=null,lastR=null,lastErr="",sk=[],selK=-1,skPhase="draw",hist=[],redo=[],raw=null,lay=null,mode="draw",dFlip=false,tagEdit=false,psearch="",psize="",SW=400,SH=480;
+const fitAmt=(n,s)=>n?(FIT()[n]?.[s]??0):0;
+const flAdj=p=>({a:p.fitS?-fitAmt(p.fitS,p.size):(p.fs?F():0),b:p.fitE?-fitAmt(p.fitE,p.size):(p.fe?F():0)});
+const evalP=(p,meas="short")=>calc(p.legs,D()[p.size],0,flAdj(p),new Set(),meas);
+const chip=s=>`<span class="sz" style="--c:${COL[s]}">${s}"</span>`;
+function prevSvg(segs){            // small picture in proportion: x right, y away (up-right), z down
+  const Pt=[[0,0,0]];for(const [v,L] of segs){const q=Pt.at(-1);Pt.push([q[0]+v[0]*L,q[1]+v[1]*L,q[2]+v[2]*L])}
+  const Q=Pt.map(p=>[p[0]+p[1]/2,p[2]-p[1]/2]),xs=Q.map(q=>q[0]),ys=Q.map(q=>q[1]);
+  const x0=Math.min(...xs),y0=Math.min(...ys),bw=Math.max(...xs)-x0,bh=Math.max(...ys)-y0;
+  const s=Math.min(84/(bw||1),40/(bh||1)),ox=50-bw*s/2,oy=28-bh*s/2,pt=q=>[+(ox+(q[0]-x0)*s).toFixed(1),+(oy+(q[1]-y0)*s).toFixed(1)];
+  const pp=Q.map(pt);
+  return `<svg viewBox="0 0 100 56" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><polyline points="${pp.map(p=>p.join(",")).join(" ")}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pp[0][0]}" cy="${pp[0][1]}" r="3.2" fill="currentColor"/></svg>`;
+}
+
+// ---------- modes
+const VIEW={draw:"vcanvas",len:"vcanvas",make:"vmake",name:"vname",user:"vuser",print:"vprint"};
+const TITLE={make:"Make",name:"Pipe naming",user:"User",print:"Print & search"};
+const INFO={
+ draw:"<b>Draw</b><br>Draw the pipe with your finger. → is +x, ↗ is +y (away from you), ↓ is +z (down). Opposite strokes give −x, −y, −z; ↖ and ↘ snap to the nearest direction. ↶ ↷ undo and redo your strokes, Clear removes everything (asks first). Accept locks the directions and opens Lengths. Edit unlocks them again to add directions.",
+ len:"<b>Lengths &amp; sizes</b><br>Pick the tube size at the top. Tap a pipe section to enter its length, or its start and end coordinate (length = end minus start). Flip swaps the direction of that section. ⌨ Path opens the text version and the diagonal step helper (two bends for an offset).",
+ make:"<b>Make</b><br>Cutting length includes the flare allowance and subtracts fitting amounts. Bending marks are the centre of each bend, measured from the shorter end unless you choose the start. Turn is how far to rotate the tube about its own axis (clockwise, looking along it) before that bend. Fittings sit at the ends only. Deductions are stored per user.",
+ name:"<b>Pipe naming</b><br>The description is how you find the pipe again in Print &amp; pipe search. Tap a tag to add it to the description. Export saves this user's pipes and settings as a JSON file, Import loads such a file (for example on another phone).",
+ user:"<b>User</b><br>Everything is stored in this browser, separately for each user: saved pipes, tags and deductions. Deductions are the mm taken off the full length for each 90° bend (other angles are scaled), the flare allowance and each fitting.",
+ print:"<b>Print &amp; pipe search</b><br>Search the saved pipes of this user, filter by size (one at a time) and drag the grip ⠿ to change the print order (arrow keys work on the grip too). Blank pipes give you a line with the chosen number of bend ticks to fill in by hand. Each pipe line shows the bending marks from the measuring end and the cutting length at the end."};
+function setMode(m){
+  if(m=="len"&&sk.length)skPhase="edit";
+  mode=m;closeAll();
+  $$(".view").forEach(v=>v.classList.toggle("on",v.id==VIEW[m]));
+  $$("nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.m==m));
+  $("#ttl").hidden=VIEW[m]=="vcanvas";$("#ttl").textContent=TITLE[m]||"";
+  if(VIEW[m]=="vcanvas"){fitPad();skRender()}
+  if(m=="make")renderMake();if(m=="name")renderName();if(m=="user")renderUser();if(m=="print")renderPrint();
+}
+$$("nav button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$("#bMenu").onclick=()=>{const on=!$("#menu").classList.contains("on");closeAll();if(on){$("#menu").classList.add("on");$("#menuBg").classList.add("on");$("#who").textContent="User: "+db.current}};
+$("#menuBg").onclick=closeAll;
+$("#bInfo").onclick=()=>{const c=$("#infoCard"),h=c.hidden;closeAll();if(h){c.innerHTML=INFO[mode];c.hidden=false}};
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]");if(g){setMode(g.dataset.go)}
+  if(!$("#infoCard").hidden&&!e.target.closest("#infoCard,#bInfo"))$("#infoCard").hidden=true;
+});
+$("#bBig").onclick=()=>{db.big=!db.big;store();bigText()};
+function bigText(){document.documentElement.style.fontSize=db.big?"20px":"";$("#bBig").textContent="Aa Large text: "+(db.big?"on":"off")}
+
+// ---------- calculate (reads the shared path text)
 function render(){
-  const out=$("#out");
-  try{
-    const size=$("#size").value,raw=$("#ded").value,d=raw!==""?+raw:D()[size];
-    if(!(d>=0))throw "Deduction must be a number, 0 or more";
-    const segs=parse($("#path").value),n=segs.length-1;
-    for(const b of [...elbs])if(b>n)elbs.delete(b);
-    const fs=$("#fs").checked,fe=$("#fe").checked,fl={s:fs,e:fe,mm:F()},em=E()[size];
-    const r=calc(segs,d,em,fl,elbs,$("#meas").value),mp=r.pieces.length>1;
-    cur={size,d,segs,elb:[...elbs],fs,fe};lastR=r;
-    const ft=[fs?"start":"",fe?"end":""].filter(Boolean).join(" and ");
-    out.innerHTML=`<p class="big">${fmt(r.total)} <small>mm to cut${mp?" in total":""}</small></p>
-<p class="legs">Legs: ${legsText(segs)}. ${r.rows.filter(b=>!b.elb).length==1?"1 bend":r.rows.filter(b=>!b.elb).length+" bends"}, ${fmt(d)} mm per 90° bend${r.rows.some(b=>!b.elb&&Math.abs(b.ang-90)>.05)?" (other angles scaled)":""}${elbs.size?`, ${elbs.size} bought elbow${elbs.size>1?"s":""} (${fmt(em)} mm off each piece end)`:""}.${ft&&fl.mm?` Includes ${fmt(fl.mm)} mm flare at the ${ft}.`:""}</p>
-${mp?`<p class="legs">${r.pieces.map((p,k)=>`Piece ${k+1} (leg${p.b>p.a?"s "+(p.a+1)+"–"+(p.b+1):" "+(p.a+1)}): ${fmt(p.cut)} mm${p.nb?", marks from the "+p.from:""}`).join("; ")}.</p>`:""}
-${!mp&&r.pieces[0].nb?`<p class="legs">Marks are measured from the ${r.pieces[0].from} of the tube${$("#meas").value=="short"?" (the shorter end)":""}.</p>`:""}
-<table><tr><th>Bend</th><th>Elbow</th>${mp?"<th>Piece</th>":""}<th>From</th><th>Mark</th><th>Corner</th><th>Roll</th></tr>${r.rows.map(b=>`<tr><td>${b.i}${b.ang&&Math.abs(b.ang-90)>.05?` <small>${fmt(b.ang)}°</small>`:""}</td><td><input type="checkbox" data-b="${b.i}"${b.elb?" checked":""} aria-label="Bought elbow at bend ${b.i}"></td>${mp?`<td>${b.elb?"—":b.piece}</td>`:""}${b.elb?"<td>—</td><td>—</td><td>—</td><td>—</td>":`<td>${b.from}</td><td>${fmt(b.mark)}</td><td>${fmt(b.corner)}</td><td>${b.roll}°</td>`}</tr>`).join("")}</table>
-<p class="hint">Tick Elbow where you use a bought elbow instead of bending: the pipe is cut there into separate pieces. Mark is where to bend, measured from the end named in the From column (centre of the bend, flare included). Corner is the virtual corner on the shortened piece. Roll is how far to turn the piece clockwise about its own axis (looking from its start toward its end) before the bend, relative to the previous bend in that piece.</p>${r.warns.map(w=>`<p class="warn">${w}</p>`).join("")}`;
-    $("#views").innerHTML=draw(segs,elbs);
-  }catch(e){cur=null;lastR=null;out.innerHTML=`<p class="err">${esc(e)}</p>`;$("#views").innerHTML=""}
-  skInfo();
+  const pv=$("#path").value.trim();cur=null;lastR=null;lastErr="";
+  if(pv&&!pv.includes("?")){
+    try{cur={size:P.size,legs:parse(pv),fs:P.fs,fe:P.fe,fitS:P.fitS,fitE:P.fitE};lastR=evalP(cur,P.meas)}
+    catch(e){cur=null;lastErr=String(e)}
+  }
+  if(mode=="make")renderMake();
+  skStatus();
 }
-function users(){
-  const names=Object.keys(db.users).sort((a,b)=>a.localeCompare(b));
-  $("#user").innerHTML=names.length?names.map(n=>`<option${n==db.current?" selected":""}>${esc(n)}</option>`).join(""):`<option value="">No users yet</option>`;
-  $("#deluser").hidden=!U();$("#expu").hidden=!U();
-}
-function list(){
-  const u=U(),names=u?Object.keys(u.pipes):[];
-  $("#lh").textContent=u?`Saved pipes for ${db.current}`:"Saved pipes";
-  $("#list").innerHTML=!u?`<p class="hint">Create or choose a user to save pipes.</p>`:names.length?names.map(n=>{
-    const p=u.pipes[n],segs=p.legs;
-    return `<div class="saved"><div><strong>${esc(n)}</strong><br><small>${p.size}", ${segs.length-1} bends, cut ${fmt(calc(segs,p.deduct,E()[p.size],fl0(p),new Set(p.elb||[])).total)} mm</small></div><button data-a="load" data-n="${esc(n)}">Load</button><button data-a="del" data-n="${esc(n)}">Delete</button></div>`}).join(""):`<p class="hint">Nothing saved yet. Name a pipe above and press Save pipe.</p>`;
-}
-function tbl(){
-  const dis=U()?"":" disabled";
-  const grp=(t,k,o)=>`<h3 class="g">${t}</h3>`+Object.entries(o).map(([s,v])=>`<div><label>${s}"</label><input type="number" step="any" inputmode="decimal" data-k="${k}" data-s="${s}" value="${v}"${dis}></div>`).join("");
-  $("#tbl").innerHTML=grp("Bend deduction (mm per bend)","ded",D())+grp("Bought elbow (mm off each piece end)","elb",E())+`<h3 class="g">Flare</h3><div><label>mm added per flared end</label><input type="number" step="any" inputmode="decimal" data-k="flare" value="${F()}"${dis}></div>`;
-}
-function tags(){
-  $("#tags").innerHTML=T().map((s,i)=>`<span class="tag"><button type="button" data-a="use" data-t="${i}">${esc(s)}</button>${editTags?`<button type="button" class="x" data-a="rm" data-t="${i}" aria-label="Remove tag ${esc(s)}">×</button>`:""}</span>`).join("")+`<button type="button" class="tg" id="tedit">${editTags?"Done":"Edit tags"}</button>`;
-  $("#tadd").hidden=!editTags;
-}
-function refresh(){users();tbl();list();tags();render()}
 
-$("#user").onchange=()=>{db.current=$("#user").value;store();msg("");msg("","umsg");refresh()};
-const create=()=>{
-  const n=$("#newuser").value.trim();
-  if(!okName(n))return msg("Enter a name for the new user.","umsg");
-  const had=Object.hasOwn(db.users,n);
-  if(!had)db.users[n]={pipes:{},ded:{}};
-  db.current=n;$("#newuser").value="";store();msg("");refresh();
-  msg(had?`"${n}" already exists. Switched to them.`:`Created user "${n}".`,"umsg");
-};
-$("#create").onclick=create;
-$("#tags").onclick=e=>{
-  const b=e.target.closest("button");if(!b)return;
-  if(b.id=="tedit"){if(!U()&&!editTags)return msg("Create or choose a user first to edit tags.");editTags=!editTags;return tags()}
-  const i=+b.dataset.t,t=T();
-  if(b.dataset.a=="use"){const n=$("#name"),v=n.value.trim();n.value=v?v+" "+t[i]:t[i];msg("")}
-  else{U().tags=t.filter((_,j)=>j!=i);store();tags()}
-};
-const addTag=()=>{
-  const v=$("#newtag").value.trim();
-  if(!U())return msg("Create or choose a user first to edit tags.");
-  if(!v)return;
-  if(T().includes(v))return msg(`Tag "${v}" already exists.`);
-  U().tags=[...T(),v];$("#newtag").value="";store();tags();msg("");
-};
-$("#tagadd").onclick=addTag;
-$("#newtag").onkeydown=e=>{if(e.key=="Enter")addTag()};
-$("#newuser").onkeydown=e=>{if(e.key=="Enter")create()};
-$("#deluser").onclick=()=>{
-  if(!U()||!confirm(`Delete user "${db.current}" and all their saved pipes?`))return;
-  delete db.users[db.current];db.current=Object.keys(db.users)[0]||"";store();refresh();msg("User deleted.","umsg");
-};
-$("#tbl").oninput=e=>{
-  const k=e.target.dataset.k,s=e.target.dataset.s;
-  if(k&&U()&&e.target.value!==""){if(k=="flare")U().flare=+e.target.value;else(U()[k]??={})[s]=+e.target.value;store();render();list()}
-};
-$("#out").onchange=e=>{const b=+e.target.dataset.b;if(b){e.target.checked?elbs.add(b):elbs.delete(b);render()}};
-["#path","#size","#ded","#fs","#fe","#meas"].forEach(s=>$(s).addEventListener("input",()=>{msg("");render()}));
-$("#save").onclick=()=>{
-  const n=$("#name").value.trim();
-  if(!U())return msg("Create or choose a user first.");
-  if(!okName(n))return msg("Give the pipe a name first.");
-  if(!cur)return msg("Fix the path first.");
-  const had=Object.hasOwn(U().pipes,n);
-  U().pipes[n]={size:cur.size,deduct:cur.d,legs:cur.segs,elb:cur.elb,fs:cur.fs,fe:cur.fe};store();list();
-  msg(had?`Updated "${n}".`:`Saved "${n}".`);
-};
-$("#list").onclick=e=>{
-  const b=e.target.closest("button");if(!b)return;
-  const n=b.dataset.n,p=U().pipes[n];
-  if(b.dataset.a=="del"){if(confirm(`Delete "${n}"?`)){delete U().pipes[n];store();list()}}
-  else{$("#name").value=n;$("#size").value=p.size;$("#ded").value=p.deduct;elbs=new Set(p.elb||[]);$("#fs").checked=p.fs!==false;$("#fe").checked=p.fe!==false;$("#path").value=p.legs.map(legTok).join(" ");msg(`Loaded "${n}". Change anything and press Save pipe to update it.`);render();skLoad(true);scrollTo({top:0,behavior:"smooth"})}
-};
-const exportJson=(users,file)=>{
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([JSON.stringify({app:"bendmarks",version:2,users},null,2)],{type:"application/json"}));
-  a.download=file;a.click();
-};
-$("#exp").onclick=()=>exportJson(db.users,"bendmarks-all-users.json");
-$("#expu").onclick=()=>{
-  if(!U())return msg("Create or choose a user first.","fmsg");
-  exportJson({[db.current]:U()},`bendmarks-${db.current.replace(/[^\w.-]+/g,"_")}.json`);
-  msg(`Exported ${db.current}.`,"fmsg");
-};
-$("#imp").onclick=()=>$("#file").click();
-$("#file").onchange=async e=>{
-  try{
-    const p=JSON.parse(await e.target.files[0].text());
-    const us=p.users||(U()?{[db.current]:{pipes:p}}:null);   // older exports were just a pipes map
-    if(!us)throw 0;
-    for(const n in us){
-      const u=us[n];
-      if(!okName(n)||typeof u.pipes!="object")throw 0;
-      for(const k in u.pipes){const q=u.pipes[k];if(!(Array.isArray(q.legs)&&q.size&&q.deduct>=0))throw 0}
-    }
-    for(const n in us){
-      const t=db.users[n]??={pipes:{},ded:{}};
-      Object.assign(t.pipes,us[n].pipes);Object.assign(t.ded,us[n].ded||{});
-      Object.assign(t.elb??={},us[n].elb||{});if(typeof us[n].flare=="number")t.flare=us[n].flare;
-      if(Array.isArray(us[n].tags))t.tags=[...new Set([...(t.tags||DEFT),...us[n].tags.filter(x=>typeof x=="string")])];
-    }
-    if(!U())db.current=Object.keys(db.users)[0]||"";
-    store();refresh();msg(`Imported ${Object.keys(us).length} user(s).`,"fmsg");
-  }catch(x){msg("That file is not a Bendmarks backup.","fmsg")}
-  e.target.value="";
-};
-// ---- draw the pipe: strokes snap to x (→), y (↗ away) and z (↓ down)
+// ---------- sketch pad: strokes snap to x (→), y (↗ away) and z (↓ down)
 const SD={x:[1,0,0],y:[0,1,0],z:[0,0,1]},SCR={x:[1,0],y:[Math.SQRT1_2,-Math.SQRT1_2],z:[0,1]};
 const DIRN={x:["right","left"],y:["away from you","toward you"],z:["down","up"]};
-const sgn=s=>s<0?"−":"+",r1=x=>+x.toFixed(1);
-const skTok=l=>legTok([SD[l.a].map(c=>c*l.s+0),l.len]);
-const skPath=()=>sk.length&&sk.every(l=>l.len!=null)?sk.map(skTok).join(" "):null;
+const sgn=s=>s<0?"−":"+",r1=x=>+x.toFixed(1),clone=a=>a.map(l=>({...l}));
+const skTxt=l=>l.len==null?`${l.s<0?"-":"+"}${l.a}?`:legTok([SD[l.a].map(c=>c*l.s+0),l.len]);
 const pdist=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return Math.abs(dy*(p[0]-a[0])-dx*(p[1]-a[1]))/l};
-function rdp(p,eps){                      // simplify a freehand stroke to its corners
+function rdp(p,eps){
   if(p.length<3)return p;
   let mi=0,md=0;
   for(let i=1;i<p.length-1;i++){const d=pdist(p[i],p[0],p.at(-1));if(d>md){md=d;mi=i}}
   if(md<=eps)return [p[0],p.at(-1)];
   return [...rdp(p.slice(0,mi+1),eps).slice(0,-1),...rdp(p.slice(mi),eps)];
 }
+const pad=$("#skpad");
+function fitPad(){const r=pad.getBoundingClientRect();if(r.width>0&&r.height>0){SW=r.width;SH=r.height;pad.setAttribute("viewBox",`0 0 ${SW} ${SH}`)}}
 function skLay(){
   if(!sk.length){lay={sc:1,P:[]};return}
-  const W=340,H=300,m=38,P=[[0,0]];
-  for(const l of sk){const q=P.at(-1),v=SCR[l.a];P.push([q[0]+v[0]*l.s*l.px,q[1]+v[1]*l.s*l.px])}
-  const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),bw=Math.max(...xs)-x0,bh=Math.max(...ys)-y0;
-  const sc=Math.min((W-2*m)/(bw||1),(H-2*m)/(bh||1),1.5),ox=(W-bw*sc)/2,oy=(H-bh*sc)/2;
-  lay={sc,P:P.map(p=>[r1(ox+(p[0]-x0)*sc),r1(oy+(p[1]-y0)*sc)])};
+  const mt=84,mb=96,ms=34,Pt=[[0,0]];
+  for(const l of sk){const q=Pt.at(-1),v=SCR[l.a];Pt.push([q[0]+v[0]*l.s*l.px,q[1]+v[1]*l.s*l.px])}
+  const xs=Pt.map(p=>p[0]),ys=Pt.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),bw=Math.max(...xs)-x0,bh=Math.max(...ys)-y0;
+  const aw=Math.max(60,SW-2*ms),ah=Math.max(60,SH-mt-mb),sc=Math.min(aw/(bw||1),ah/(bh||1),2),ox=(SW-bw*sc)/2,oy=mt+(ah-bh*sc)/2;
+  lay={sc,P:Pt.map(p=>[r1(ox+(p[0]-x0)*sc),r1(oy+(p[1]-y0)*sc)])};
 }
 function skRender(){
-  skLay();let o="";
+  if(!sk.length)skPhase="draw";
+  skLay();
+  let o=`<g opacity=".85"><line class="ax" x1="16" y1="100" x2="54" y2="100" marker-end="url(#skl)"/><text class="at" x="64" y="104">x</text><line class="ax" x1="16" y1="100" x2="40" y2="76" marker-end="url(#skl)"/><text class="at" x="48" y="74">y</text><line class="ax" x1="16" y1="100" x2="16" y2="138" marker-end="url(#skl)"/><text class="at" x="16" y="152">z</text></g>`;
   sk.forEach((l,i)=>{
     const a=lay.P[i],b=lay.P[i+1];let ux=b[0]-a[0],uy=b[1]-a[1];const ul=Math.hypot(ux,uy)||1;ux/=ul;uy/=ul;
     let nx=-uy,ny=ux;if(nx<-.01||(Math.abs(nx)<.01&&ny>0)){nx=-nx;ny=-ny}
-    const tx=r1((a[0]+b[0])/2+nx*15),ty=r1((a[1]+b[1])/2+ny*15+4),t=`${sgn(l.s)}${l.a} ${l.len==null?"?":fmt(l.len)}`;
+    const tx=r1((a[0]+b[0])/2+nx*18),ty=r1((a[1]+b[1])/2+ny*18+5),t=`${sgn(l.s)}${l.a} ${l.len==null?"?":fmt(l.len)}`;
     o+=`<line class="sk${i==selK?" sel":""}" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" marker-end="url(#skm)"/><text class="ho" x="${tx}" y="${ty}">${t}</text><text class="ln" x="${tx}" y="${ty}">${t}</text>`;
   });
-  if(sk.length)o+=`<circle cx="${lay.P[0][0]}" cy="${lay.P[0][1]}" r="5" fill="var(--ok)"/><circle cx="${lay.P.at(-1)[0]}" cy="${lay.P.at(-1)[1]}" r="5" fill="var(--bad)"/>`;
-  $("#skg").innerHTML=o;skEd();
+  if(sk.length)o+=`<circle cx="${lay.P[0][0]}" cy="${lay.P[0][1]}" r="6" fill="var(--ok)"/><circle cx="${lay.P.at(-1)[0]}" cy="${lay.P.at(-1)[1]}" r="6" fill="var(--bad)"/>`;
+  $("#skg").innerHTML=o;
+  const dr=skPhase=="draw";
+  $("#bAccept").hidden=!dr||!sk.length;$("#bEdit").hidden=dr;$("#bUndo").hidden=$("#bRedo").hidden=$("#bClear").hidden=!dr;
+  $("#bUndo").disabled=!hist.length;$("#bRedo").disabled=!redo.length;$("#bClear").disabled=!sk.length;
+  pad.classList.toggle("lock",!dr);
+  $("#hint0").hidden=sk.length>0;$("#hint0").textContent=mode=="len"?"Nothing drawn yet. Go to Draw.":"Draw the pipe with your finger";
+  $("#ovd").hidden=mode!="draw";$("#szc").hidden=mode!="len";
+  skStatus();
 }
-function skEd(){
-  const l=sk[selK];$("#sked").hidden=!l;
-  if(!l)return;
-  $("#sktitle").textContent=`Leg ${selK+1}: ${sgn(l.s)}${l.a}, ${DIRN[l.a][l.s<0?1:0]}`;
-  for(const [id,v] of [["#sklen",l.len],["#sks",l.cs],["#ske",l.ce]])if(document.activeElement!==$(id))$(id).value=v==null?"":num(v);
-}
-function skInfo(){
-  const el=$("#skinfo");
-  if(!sk.length){el.textContent="Draw the first leg with your finger, or press Draw current path.";return}
+function skStatus(){
   const set=sk.filter(l=>l.len!=null).length;
-  if(set<sk.length){el.textContent=`${set} of ${sk.length} legs have a length. Tap a line to set it.`;return}
-  let same=false;
-  try{same=merge(sk.map(l=>[SD[l.a].map(c=>c*l.s+0),l.len])).map(legTok).join(" ")===parse($("#path").value).map(legTok).join(" ")}catch(e){}
-  if(!lastR||!same){el.textContent=lastR?"The path field no longer matches this sketch. Press Draw current path to redraw from it.":"Check the result below.";return}
-  const bs=lastR.rows.filter(b=>!b.elb).map(b=>`${b.i}: ${fmt(b.mark)}${b.from=="end"?" from the end":""}`);
-  el.textContent=`Cut length ${fmt(lastR.total)} mm${lastR.pieces.length>1?` in ${lastR.pieces.length} pieces`:""}. ${bs.length?"Bend marks, "+bs.join(", ")+".":"No bends."} Details below.`;
+  $("#stat").innerHTML=mode=="len"&&sk.length?`<span>${set}/${sk.length} sections have a length${set<sk.length?" · tap a pipe":""}</span>`:"";
+  $("#ovl").hidden=mode!="len"||!$("#legEd").hidden;
+  $("#szc").innerHTML=SIZES.map(s=>`<button class="sz" style="--c:${COL[s]}" data-sz="${s}" aria-pressed="${P.size==s}">${s}"</button>`).join("");
 }
-function skSync(){
-  skRender();
-  const p=skPath();
-  if(p){$("#path").value=p;msg("");render()}
-  skInfo();
-}
-function skLoad(quiet){
+function skSync(){skRender();$("#path").value=sk.map(skTxt).join(" ");render()}
+function skFromPath(loud){
+  const t=$("#path").value.trim();
+  if(!t){sk=[];selK=-1;skRender();return}
+  let legs=[];
   try{
-    const legs=parse($("#path").value).map(([d,L])=>{
-      const c=comp(d,1);if(c.length!=1)throw "Diagonal steps can't be shown in the sketch pad.";
-      return {a:c[0][1],s:c[0][0]<0?-1:1,px:L,len:L,cs:null,ce:null};
-    });
-    sk=legs;selK=-1;skRender();skInfo();
-  }catch(e){if(!quiet){sk=[];selK=-1;skRender();$("#skinfo").textContent=String(e)}}
+    if(t.includes("?")){
+      for(const m of t.matchAll(/([+\-−]?)\s*([xyz])\s*(\d+(?:\.\d+)?|\?)/gi)){
+        const v=m[3]=="?"?null:(+m[3]||null);
+        legs.push({a:m[2].toLowerCase(),s:/[-−]/.test(m[1])?-1:1,px:v||100,len:v,cs:null,ce:null});
+      }
+      if(!legs.length)throw "Enter a path, for example x490 45 y200 z100";
+    }else legs=parse(t).map(([d,L])=>{const c=comp(d,1);if(c.length!=1)throw "DIAG";return {a:c[0][1],s:c[0][0]<0?-1:1,px:L,len:L,cs:null,ce:null}});
+  }catch(e){
+    if(e=="DIAG"){sk=[];selK=-1;skRender();toast("Diagonal steps can't be shown on the drawing; see Make for the preview.")}
+    else if(loud)toast(String(e));
+    return;
+  }
+  sk=legs;selK=-1;hist=[];redo=[];skPhase="edit";skRender();
 }
+function openLeg(i){
+  const l=sk[i];selK=i;dFlip=false;
+  $("#leL").value=l.len==null?"":num(l.len);$("#leS").value=l.cs==null?"":num(l.cs);$("#leE").value=l.ce==null?"":num(l.ce);
+  legTitle();$("#legEd").hidden=false;skRender();setTimeout(()=>$("#leL").focus(),0);
+}
+function legTitle(){const l=sk[selK],s=l.s*(dFlip?-1:1);$("#leT").textContent=`Section ${selK+1}: ${sgn(s)}${l.a}, ${DIRN[l.a][s<0?1:0]}`}
+function closeLeg(){selK=-1;$("#legEd").hidden=true;skRender()}
+$("#leL").oninput=()=>{$("#leS").value=$("#leE").value=""};
+$("#leS").oninput=$("#leE").oninput=()=>{const a=$("#leS").value,b=$("#leE").value;if(a!==""&&b!==""&&+a!=+b)$("#leL").value=num(Math.abs(+b-+a))};
+$("#leF").onclick=()=>{dFlip=!dFlip;legTitle()};
+$("#leB").onclick=closeLeg;
+$("#leA").onclick=()=>{
+  const l=sk[selK],L=+$("#leL").value;
+  if(!(L>0)){toast("Enter a length, or a start and end coordinate that differ.");return}
+  l.len=L;l.cs=$("#leS").value===""?null:+$("#leS").value;l.ce=$("#leE").value===""?null:+$("#leE").value;
+  if(dFlip)l.s*=-1;
+  closeLeg();skSync();
+};
+for(const id of ["#leL","#leS","#leE"])$(id).onkeydown=e=>{if(e.key=="Enter")$("#leA").click()};
 function skTap(p){
-  let best=-1,bd=22;
+  let best=-1,bd=30;
   sk.forEach((_,i)=>{
     const a=lay.P[i],b=lay.P[i+1],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));
     const d=Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);if(d<bd){bd=d;best=i}
   });
-  selK=best;skRender();
-  if(best>=0)setTimeout(()=>$("#sklen").focus(),0);
+  if(best>=0)openLeg(best);else if(!$("#legEd").hidden)closeLeg();
 }
 function skEnd(){
   const pts=raw;raw=null;$("#skraw").setAttribute("points","");
   if(!pts)return;
   const total=pts.reduce((t,p,i)=>i?t+Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1]):0,0);
-  if(total<12)return skTap(pts[0]);                       // a tap, not a stroke
-  const sc=lay?lay.sc:1,simp=rdp(pts,14);let fresh=null;
+  if(skPhase=="edit"){if(mode=="len"&&total<14)skTap(pts[0]);return}
+  if(total<14)return;
+  const before=clone(sk),sc=lay?lay.sc:1,simp=rdp(pts,16);let fresh=null;
   for(let i=1;i<simp.length;i++){
     const dx=simp[i][0]-simp[i-1][0],dy=simp[i][1]-simp[i-1][1],l=Math.hypot(dx,dy);
-    if(l<20)continue;
+    if(l<24)continue;
     let best=null;
     for(const a of "xyz")for(const s of [1,-1]){const c=(dx*SCR[a][0]+dy*SCR[a][1])*s/l;if(!best||c>best.c)best={a,s,c}}
     const px=l*best.c/sc;
     if(fresh&&fresh.a==best.a&&fresh.s==best.s)fresh.px+=px;
     else{fresh={a:best.a,s:best.s,px,len:null,cs:null,ce:null};sk.push(fresh)}
   }
-  if(!fresh)return;
-  selK=sk.findIndex(l=>l.len==null);skSync();
+  if(fresh){hist.push(before);redo=[];skSync()}
 }
-const pad=$("#skpad"),skPt=e=>{const r=pad.getBoundingClientRect();return [(e.clientX-r.left)*340/r.width,(e.clientY-r.top)*300/r.height]};
+const skPt=e=>{const r=pad.getBoundingClientRect();return [(e.clientX-r.left)*SW/(r.width||SW),(e.clientY-r.top)*SH/(r.height||SH)]};
 pad.onpointerdown=e=>{pad.setPointerCapture?.(e.pointerId);raw=[skPt(e)]};
-pad.onpointermove=e=>{if(raw){raw.push(skPt(e));$("#skraw").setAttribute("points",raw.map(p=>p.map(r1).join(",")).join(" "))}};
+pad.onpointermove=e=>{if(raw){raw.push(skPt(e));if(skPhase=="draw")$("#skraw").setAttribute("points",raw.map(p=>p.map(r1).join(",")).join(" "))}};
 pad.onpointerup=e=>{if(raw)raw.push(skPt(e));skEnd()};
 pad.onpointercancel=()=>{raw=null;$("#skraw").setAttribute("points","")};
-const skSet=fn=>{const l=sk[selK];if(l){fn(l);skSync()}};
-$("#sklen").oninput=()=>skSet(l=>{const v=+$("#sklen").value;l.len=v>0?v:null;l.cs=l.ce=null;$("#sks").value=$("#ske").value=""});
-$("#sks").oninput=$("#ske").oninput=()=>skSet(l=>{
-  const a=$("#sks").value,b=$("#ske").value;
-  l.cs=a===""?null:+a;l.ce=b===""?null:+b;
-  if(a!==""&&b!==""&&+a!=+b)l.len=Math.abs(+b-+a);
+$("#bUndo").onclick=()=>{if(hist.length){redo.push(clone(sk));sk=hist.pop();selK=-1;skSync()}};
+$("#bRedo").onclick=()=>{if(redo.length){hist.push(clone(sk));sk=redo.pop();selK=-1;skSync()}};
+$("#bClear").onclick=()=>ask("Clear the whole drawing? Are you sure?",()=>{hist.push(clone(sk));redo=[];sk=[];selK=-1;skSync()});
+$("#bAccept").onclick=()=>{if(sk.length){skPhase="edit";setMode("len")}};
+$("#bEdit").onclick=()=>{skPhase="draw";selK=-1;skRender()};
+$("#bPath").onclick=()=>{closeAll();$("#mPath").hidden=false};
+$("#szc").onclick=e=>{const b=e.target.closest("[data-sz]");if(b){P.size=b.dataset.sz;render();skStatus()}};
+$("#path").addEventListener("input",()=>{render();skFromPath()});
+if(window.ResizeObserver)new ResizeObserver(()=>{if(VIEW[mode]=="vcanvas"){fitPad();skRender()}}).observe($("#vcanvas"));
+
+// ---------- Make (cutting length, bending marks, ends)
+function renderMake(){
+  const el=$("#vmake");
+  if(!cur){el.innerHTML=`<div class="empty">${lastErr?`<p class="err">${esc(lastErr)}</p>`:"Draw the pipe and give every section a length first."}<br><button data-go="draw">✎ Draw</button><button data-go="len">↔ Lengths</button></div>`;return}
+  const r=lastR,p=cur,opt=sel=>Object.keys(FIT()).map(n=>`<option${n==sel?" selected":""}>${esc(n)}</option>`).join("");
+  const end=(k,lab)=>{const f=p["fit"+k],fl=p["f"+(k=="S"?"s":"e")];return `<div><b>${lab}</b>
+<label class="ck"><input type="checkbox" data-f="f${k=="S"?"s":"e"}" ${fl&&!f?"checked":""} ${f?"disabled":""}> Flare${fl&&!f?` +${fmt(F())}`:""}</label>
+<label for="fit${k}">Bought fitting</label><select id="fit${k}" data-fit="${k}"><option value="">None</option>${opt(f)}</select>${f?`<small>−${fmt(fitAmt(f,p.size))} mm</small>`:""}</div>`};
+  el.innerHTML=`<div class="mh"><div class="pvb">${prevSvg(p.legs)}</div><div>${chip(p.size)}<div class="cutl">${fmt(r.total)}<small> mm cut</small></div></div></div>
+${r.warns.map(w=>`<p class="warn">${esc(w)}</p>`).join("")}
+<h3>Bending marks (centre of each bend)</h3>
+${r.rows.length?`<ol class="marks">${r.rows.map(b=>`<li><b>${b.i}. Bending Mark ${fmt(b.mark)}</b><small>${b.from=="end"?"from end":"from start"}${Math.abs(b.ang-90)>.05?` · ${fmt(b.ang)}°`:""}${b.roll?` · turn ${b.roll}°`:""}</small></li>`).join("")}</ol>`:`<p class="hint">No bends.</p>`}
+<h3>Pipe ends</h3><div class="ends">${end("S","Start")}${end("E","End")}</div>
+<label for="meas">Marks measured from</label><select id="meas"><option value="short"${P.meas=="short"?" selected":""}>Shorter end</option><option value="start"${P.meas=="start"?" selected":""}>Start of the pipe</option></select>
+<button data-act="ded" style="margin-top:14px;width:100%">Deductions (bend · flare · fittings) for ${esc(db.current)}</button>`;
+}
+$("#vmake").addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.f){P[t.dataset.f]=t.checked}
+  else if(t.dataset.fit){P["fit"+t.dataset.fit]=t.value}
+  else if(t.id=="meas"){P.meas=t.value}
+  else return;
+  render();
 });
-$("#skflip").onclick=()=>skSet(l=>{l.s*=-1});
-$("#skdel").onclick=()=>{if(sk[selK]){sk.splice(selK,1);selK=-1;skSync()}};
-$("#skdone").onclick=()=>{
-  const nx=sk.findIndex((l,i)=>i>selK&&l.len==null);
-  selK=nx>=0?nx:sk.findIndex(l=>l.len==null);skRender();
+$("#vmake").addEventListener("click",e=>{if(e.target.closest("[data-act=ded]")){closeAll();$("#mDedWho").textContent="Values belong to user "+db.current;$("#mDedBody").innerHTML=dedHtml();$("#mDed").hidden=false}});
+
+// ---------- tags and deductions editors (shared by Name, User and the Make popup)
+const tagsHtml=(box,edit)=>`<div class="tags">${T().map((s,i)=>`<span class="tag">${box=="n"?`<button type="button" data-ta="use" data-i="${i}">${esc(s)}</button>`:`<span class="t2">${esc(s)}</span>`}${edit?`<button type="button" class="x" data-ta="rm" data-i="${i}" aria-label="Remove tag ${esc(s)}">×</button>`:""}</span>`).join("")}${box=="n"?`<button type="button" class="tg" data-ta="edit">${edit?"Done":"Edit tags"}</button>`:""}</div>${edit?`<div class="inl"><input data-tn placeholder="New tag" maxlength="24" autocomplete="off"><button type="button" class="p" data-ta="add">Add</button></div>`:""}`;
+const dedHtml=()=>`<h3>Bend deduction per 90° bend (mm)</h3><div class="g4">${SIZES.map(s=>`<label>${s}"<input type="number" step="any" inputmode="decimal" data-d="ded" data-s="${s}" value="${D()[s]}"></label>`).join("")}</div>
+<h3>Flare per end (mm)</h3><input type="number" step="any" inputmode="decimal" data-d="flare" value="${F()}" style="max-width:140px">
+<h3>Fittings (mm taken off the pipe end)</h3>
+${Object.entries(FIT()).map(([n,v])=>`<div class="fit"><b>${esc(n)}</b>${FITD[n]?"":`<button data-d="rmfit" data-f="${esc(n)}" style="min-height:36px;padding:2px 10px">Remove</button>`}<div class="g4">${SIZES.map(s=>`<label>${s}"<input type="number" step="any" inputmode="decimal" data-d="fit" data-f="${esc(n)}" data-s="${s}" value="${v[s]}"></label>`).join("")}</div></div>`).join("")}
+<div class="inl"><input data-fn placeholder="New fitting name" maxlength="20" autocomplete="off"><button data-d="addfit">Add fitting</button></div>`;
+document.addEventListener("input",e=>{
+  const t=e.target,k=t.dataset.d;if(!k||k=="addfit"||k=="rmfit"||t.value==="")return;
+  if(k=="ded")U().ded[t.dataset.s]=+t.value;
+  else if(k=="flare")U().flare=+t.value;
+  else if(k=="fit")U().fit[t.dataset.f]={...FIT()[t.dataset.f],[t.dataset.s]:+t.value};
+  store();render();
+});
+document.addEventListener("click",e=>{
+  const d=e.target.closest("[data-d]");
+  if(d&&(d.dataset.d=="addfit"||d.dataset.d=="rmfit")){
+    const box=d.closest(".card,#uDed");
+    if(d.dataset.d=="addfit"){const n=box.querySelector("[data-fn]").value.trim();if(n&&n!="__proto__"&&!FIT()[n])U().fit[n]={...FIT()["Elbow"]}}
+    else delete U().fit[d.dataset.f];
+    store();box.id=="uDed"?renderUser():$("#mDedBody").innerHTML=dedHtml();render();return;
+  }
+  const b=e.target.closest("[data-ta]");if(!b)return;
+  const box=b.closest("[data-box]")?.dataset.box,a=b.dataset.ta,i=+b.dataset.i;
+  if(a=="use"){const n=$("#name"),v=n.value.trim();n.value=(v?v+" ":"")+T()[i];return}
+  if(a=="edit"){tagEdit=!tagEdit}
+  else if(a=="rm"){U().tags=T().filter((_,j)=>j!=i);store()}
+  else if(a=="add"){
+    const inp=b.closest("[data-box]").querySelector("[data-tn]"),v=inp.value.trim();
+    if(!v)return;if(T().includes(v))return toast(`Tag "${v}" already exists.`);
+    U().tags=[...T(),v];store();
+  }
+  box=="n"?renderName():renderUser();
+});
+
+// ---------- Name (save / export / import)
+function renderName(){$("#tagsBox").innerHTML=tagsHtml("n",tagEdit)}
+$("#bSave").onclick=()=>{
+  const n=$("#name").value.trim();
+  if(!n||n=="__proto__")return toast("Give the pipe a name or description first.");
+  if(!cur)return toast("Finish the pipe first: every section needs a length.");
+  const had=Object.hasOwn(U().pipes,n);
+  U().pipes[n]={size:cur.size,legs:cur.legs,fs:cur.fs,fe:cur.fe,fitS:cur.fitS,fitE:cur.fitE};store();
+  toast(had?`Updated "${n}".`:`Saved "${n}".`);
 };
-$("#skundo").onclick=()=>{sk.pop();selK=-1;skSync()};
-$("#skclr").onclick=()=>{sk=[];selK=-1;skRender();skInfo()};
-$("#skload").onclick=()=>skLoad(false);
-skRender();
+$("#bOpenPrint").onclick=()=>setMode("print");
+function exportJson(users,file){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({app:"bendmarks",version:3,users},null,2)],{type:"application/json"}));
+  a.download=file;a.click();
+}
+$("#bExp").onclick=()=>{exportJson({[db.current]:U()},`bendmarks-${db.current.replace(/[^\w.-]+/g,"_")}.json`);toast(`Exported ${db.current}.`)};
+$("#uExpAll").onclick=()=>exportJson(db.users,"bendmarks-all-users.json");
+$("#bImp").onclick=()=>$("#file").click();
+$("#file").onchange=async e=>{
+  try{
+    const p=JSON.parse(await e.target.files[0].text()),us=p.users||{[db.current]:{pipes:p}};
+    for(const n in us){
+      const u=us[n];if(n=="__proto__"||typeof u.pipes!="object")throw 0;
+      for(const k in u.pipes){const q=u.pipes[k];if(!(Array.isArray(q.legs)&&q.size))throw 0}
+    }
+    for(const n in us){
+      const t=db.users[n]??={pipes:{},ded:{},fit:{}},u=us[n];
+      Object.assign(t.pipes,u.pipes);Object.assign(t.ded??={},u.ded||{});Object.assign(t.fit??={},u.fit||{});
+      if(typeof u.flare=="number")t.flare=u.flare;
+      if(Array.isArray(u.tags))t.tags=[...new Set([...(t.tags||DEFT),...u.tags.filter(x=>typeof x=="string")])];
+    }
+    normDb();store();toast(`Imported ${Object.keys(us).length} user(s).`);
+  }catch(x){toast("That file is not a Bendmarks backup.")}
+  e.target.value="";
+};
+
+// ---------- User screen
+function renderUser(){
+  $("#uSel").innerHTML=Object.keys(db.users).sort((a,b)=>a.localeCompare(b)).map(n=>`<option${n==db.current?" selected":""}>${esc(n)}</option>`).join("");
+  $("#uTags").innerHTML=tagsHtml("u",true);$("#uDed").innerHTML=dedHtml();
+}
+$("#uSel").onchange=()=>{db.current=$("#uSel").value;store();renderUser();render()};
+$("#uAdd").onclick=()=>{
+  const n=$("#uNew").value.trim();if(!n||n=="__proto__")return toast("Enter a name for the new user.");
+  if(!Object.hasOwn(db.users,n))db.users[n]={pipes:{},ded:{},fit:{}};
+  db.current=n;$("#uNew").value="";store();renderUser();render();toast(`User "${n}" is active.`);
+};
+$("#uDel").onclick=()=>ask(`Delete user "${db.current}" and all their saved pipes?`,()=>{delete db.users[db.current];normDb();store();renderUser();render();toast("User deleted.")});
+
+// ---------- Print & pipe search
+const lineHtml=(marks,cut,blank)=>{
+  let h="",px=-99,lv=0;
+  const tick=(x,t,end)=>{lv=(x-px<17)?1-lv:0;px=x;h+=`<i class="tk" style="left:${x}%"></i><span class="tl${lv?" l1":""}${end?" end":""}" style="left:${x}%">${t}</span>`};
+  if(blank!=null){for(let i=1;i<=blank+1;i++)tick(i/(blank+1)*100,i<=blank?`${i}.`:"Cut",i>blank)}
+  else{marks.forEach(m=>tick(Math.min(98,m.mark/cut*100),`${m.i}: ${fmt(m.mark)}`));tick(100,`Cut: ${fmt(cut)}`,true)}
+  return `<div class="pline">${h}</div>`;
+};
+function sheetItems(){
+  const u=U(),q=psearch.trim().toLowerCase(),items=[];
+  for(const [n,p] of Object.entries(u.pipes))if((!q||n.toLowerCase().includes(q))&&(!psize||p.size==psize))items.push({k:"p:"+n,n,p});
+  for(const b of u.blanks||[])items.push({k:"b:"+b.id,b});
+  const ord=u.order||[];
+  return items.sort((a,b)=>(ord.indexOf(a.k)+1||1e9)-(ord.indexOf(b.k)+1||1e9));
+}
+function renderSheet(){
+  const items=sheetItems();
+  $("#sheet").innerHTML=`<div class="shead">${esc(db.current)} · ${new Date().toLocaleDateString()}</div>`+(items.length?items.map(it=>{
+    if(it.b)return `<div class="prow" data-k="${it.k}"><div class="ph"><button class="grab noprint" aria-label="Drag to reorder, or use the arrow keys">⠿</button><span class="sz" style="--c:#666">&nbsp;&nbsp;</span><div class="pv"></div><div class="pn"><b>&nbsp;</b></div><div class="pa noprint"><button data-pa="rmb">Remove</button></div></div>${lineHtml(0,0,it.b.n)}</div>`;
+    const p=it.p,r=evalP(p,"short"),sub=[p.fitS?`${p.fitS} at start`:p.fs?"flare at start":"",p.fitE?`${p.fitE} at end`:p.fe?"flare at end":""].filter(Boolean).join(", ");
+    return `<div class="prow" data-k="${it.k}"><div class="ph"><button class="grab noprint" aria-label="Drag to reorder, or use the arrow keys">⠿</button>${chip(p.size)}<div class="pv">${prevSvg(p.legs)}</div><div class="pn"><b>${esc(it.n)}</b><small>${esc(sub)}</small></div><div class="pa noprint"><button data-pa="open">Open</button><button data-pa="del">Delete</button></div></div>${lineHtml(r.rows,r.total)}<div class="pfrom">marks from the ${r.rows[0]?r.rows[0].from:"start"} of the pipe</div></div>`;
+  }).join(""):`<p class="hint noprint">No pipes match. Save pipes from the Name screen.</p>`);
+}
+function renderPrint(){
+  $("#pSz").innerHTML=["",...SIZES].map(s=>`<button class="sz" style="--c:${s?COL[s]:"#455"}" data-ps="${s}" aria-pressed="${psize==s}">${s?s+'"':"All"}</button>`).join("");
+  if(!$("#pN").options.length)$("#pN").innerHTML=[0,1,2,3,4,5,6,7,8].map(n=>`<option value="${n}"${n==2?" selected":""}>${n} bending points</option>`).join("");
+  renderSheet();
+}
+$("#pQ").oninput=()=>{psearch=$("#pQ").value;renderSheet()};
+$("#pSz").onclick=e=>{const b=e.target.closest("[data-ps]");if(b){psize=b.dataset.ps;renderPrint()}};
+$("#pBlank").onclick=()=>{(U().blanks??=[]).push({id:String(Date.now()),n:+$("#pN").value});store();renderSheet()};
+$("#pPrint").onclick=()=>window.print();
+$("#sheet").addEventListener("click",e=>{
+  const b=e.target.closest("[data-pa]");if(!b)return;
+  const k=b.closest(".prow").dataset.k,n=k.slice(2);
+  if(b.dataset.pa=="open"){const p=U().pipes[n];Object.assign(P,{size:p.size,fs:p.fs!==false,fe:p.fe!==false,fitS:p.fitS||"",fitE:p.fitE||""});$("#path").value=p.legs.map(legTok).join(" ");$("#name").value=n;render();skFromPath();setMode("make")}
+  else if(b.dataset.pa=="del")ask(`Delete saved pipe "${n}"?`,()=>{delete U().pipes[n];store();renderSheet()});
+  else{U().blanks=U().blanks.filter(x=>x.id!=n);store();renderSheet()}
+});
+function saveOrder(){const keys=$$("#sheet .prow").map(r=>r.dataset.k),ord=U().order||[];U().order=[...keys,...ord.filter(k=>!keys.includes(k))];store()}
+$("#sheet").addEventListener("pointerdown",e=>{
+  const g=e.target.closest(".grab");if(!g)return;
+  e.preventDefault();const row=g.closest(".prow"),box=$("#sheet");row.classList.add("drag");g.setPointerCapture?.(e.pointerId);
+  const move=ev=>{const rows=$$("#sheet .prow").filter(r=>r!=row),nx=rows.find(r=>{const b=r.getBoundingClientRect();return ev.clientY<b.top+b.height/2});box.insertBefore(row,nx||null)};
+  const up=()=>{row.classList.remove("drag");g.removeEventListener("pointermove",move);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);saveOrder()};
+  g.addEventListener("pointermove",move);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up);
+});
+$("#sheet").addEventListener("keydown",e=>{
+  const g=e.target.closest(".grab");if(!g||!["ArrowUp","ArrowDown"].includes(e.key))return;
+  e.preventDefault();const row=g.closest(".prow"),sib=e.key=="ArrowUp"?row.previousElementSibling:row.nextElementSibling;
+  if(sib&&sib.classList.contains("prow")){e.key=="ArrowUp"?sib.before(row):sib.after(row);g.focus();saveOrder()}
+});
+
+// ---------- diagonal step helper (inside the Path popup)
 function step(){
   const g=id=>$(id).value===""?null:+$(id).value;
   const a=$("#da").value,o=$("#do").value,D=g("#dd"),F=g("#df"),s1=g("#d1")??0,s2=g("#d2")??0;
@@ -564,11 +708,10 @@ $("#dins").onclick=()=>{
     parts.push(tk(s.so,s.o,s.off)+"/"+tk(s.sa,s.a,s.run));
     if(s.e)parts.push(tk(s.sa,s.a,s.e));
     $("#path").value=($("#path").value.trim()+" "+parts.join(" ")).trim();
-    msg("Added to the path: "+parts.join(" "));render();
+    msg("Added to the path: "+parts.join(" ")+(!s.s1||!s.e?` (no straight at ${!s.s1&&!s.e?"either end":!s.s1?"the start":"the end"}, so no bend point there)`:""));render();skFromPath();
   }catch(e){$("#dinfo").textContent=e}
 };
-stepInfo();
-refresh();
+stepInfo();bigText();renderName();renderUser();setMode("draw");
 </script>
 </body>
 </html>
